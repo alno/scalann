@@ -24,13 +24,7 @@ class MnistReaderSpec extends FunSpec with ShouldMatchers {
     }
 
     it("should read correct images") {
-      val m = reader.images.head.map(_ / 255.0)
-      val f2 = Figure()
-      f2.subplot(0) += image(m)
-
-      val l = new BasicLayer(reader.width * reader.height, 10)
-      val v = DenseVector.tabulate(m.rows * m.cols) { i => m(i / m.cols, i % m.cols) }
-      
+      reader.images.head.map(_ / 255.0)
     }
   }
 

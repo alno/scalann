@@ -2,7 +2,7 @@ package org.scalann
 
 import breeze.linalg._
 
-class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
+abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
 
   private[this] val weights: DenseMatrix[Double] = DenseMatrix.fill(outputSize, inputSize) { math.random * 2 - 1 }
   private[this] val biases: DenseVector[Double] = DenseVector.fill(outputSize) { math.random * 2 - 1 }
@@ -32,10 +32,32 @@ class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
       biases += biasGradient
   }
 
+  protected def outputTransform(xv: DenseVector[Double]): DenseVector[Double]
+
+  protected def outputDerivation(yv: DenseVector[Double]): DenseVector[Double]
+
+}
+
+class LogisticLayer(inputSize: Int, outputSize: Int) extends BasicLayer(inputSize, outputSize) {
+
   protected def outputTransform(xv: DenseVector[Double]) =
     xv.map { x => 1 / (1 + math.exp(-x)) }
 
   protected def outputDerivation(yv: DenseVector[Double]) =
     yv.map { y => y * (1 - y) }
+
+}
+
+class SoftmaxLayer(inputSize: Int, outputSize: Int) extends BasicLayer(inputSize, outputSize) {
+
+  protected def outputTransform(xv: DenseVector[Double]) = {
+    val exps = xv.map(math.exp)
+    val expSum = exps.sum
+
+    exps.map { _ / expSum }
+  }
+
+  protected def outputDerivation(yv: DenseVector[Double]) =
+    yv
 
 }

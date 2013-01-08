@@ -34,21 +34,22 @@ abstract class Stage {
     examples.tail.foreach { ex =>
       grad += exampleGradient(ex)
     }
-    
+
     grad *= 1.0 / examples.size
     grad
   }
-  
+
   def exampleGradient(example: (DenseVector[Double], DenseVector[Double])) = {
     val (res, memo) = forward(example._1)
     memo.backward(res - example._2)._2
   }
 
-  def measureError(examples: Traversable[(DenseVector[Double], DenseVector[Double])]): Double =
-    examples.foldLeft(0.0) { (err, ex) =>
-      err + (apply(ex._1) - ex._2).norm(2)
-    } / examples.size
-
+  def examplesLoss(examples: Traversable[(DenseVector[Double], DenseVector[Double])]): Double =
+    -examples.view.map { ex =>
+      (apply(ex._1).activeValuesIterator zip ex._2.activeValuesIterator).map {
+        case (a, b) => math.log(a) * b
+      }.sum
+    }.sum / examples.size
 
 }
 

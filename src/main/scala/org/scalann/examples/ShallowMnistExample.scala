@@ -19,9 +19,9 @@ object ShallowMnistExample extends App {
   }
 
   val trainExamples = examples.take(50)
-  val testExample = examples.drop(trainExamples.size).take(50)
+  val testExamples = examples.drop(trainExamples.size).take(5000)
 
-  val nn = new FeedForwardNetwork(List(new BasicLayer(w * h, 200), new BasicLayer(200, 10)))
+  val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
 
   val momentum = nn.examplesGradient(trainExamples)
   momentum *= 0 // TODO Implement zeroGradient
@@ -35,15 +35,16 @@ object ShallowMnistExample extends App {
 
     nn.update(momentum)
 
-    println(nn.measureError(trainExamples))
+    println(nn.examplesLoss(trainExamples))
   }
-  
-  for (iter <- 1 to 100) {    
-    val test = trainExamples((math.random * 50).toInt)
-    val out = nn(test._1)
-    
-    println(test._2, out)
-    //readLine
-  }
+
+  println("Training loss: " + nn.examplesLoss(trainExamples))
+  println("Test loss: " + nn.examplesLoss(testExamples))
+
+  val testErrorRate = testExamples.filter { ex =>
+    nn(ex._1).activeIterator.maxBy(_._2)._1 != ex._2.activeIterator.maxBy(_._2)._1
+  }.size * 1.0 / testExamples.size
+
+  println("Test error rate: " + testErrorRate)
 
 }
