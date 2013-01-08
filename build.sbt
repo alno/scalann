@@ -6,12 +6,16 @@ version := "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.10.0"
 
-libraryDependencies ++= Seq(
-  "org.scalanlp" %% "breeze-math" % "0.2-SNAPSHOT",
-  "org.scalanlp" %% "breeze-viz" % "0.2-SNAPSHOT"
+resolvers ++= Seq(
+  "Sonatype repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "1.8" % "test",
+  "org.scalanlp" % "breeze-math_2.10" % "0.2-SNAPSHOT",
+  "org.scalanlp" % "breeze-viz_2.10" % "0.2-SNAPSHOT"
+)
+
+libraryDependencies ++= Seq(
+  "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
   "junit" % "junit" % "4.8.2" % "test"
 )
