@@ -23,12 +23,10 @@ class LayerSpec extends FunSpec with ShouldMatchers {
 
     it("should produce correctly-sized derivations") {
       val (output, memo) = layer.forward(zv(3))
-      val (dInput, WeightBiasGradient(dWeights, dBiases)) = memo.backward(zv(2))
+      val (dInput, dParams) = memo.backward(zv(2))
 
       dInput.size should be(3)
-      dWeights.cols should be(3)
-      dWeights.rows should be(2)
-      dBiases.size should be(2)
+      dParams.size should be(8)
     }
 
   }

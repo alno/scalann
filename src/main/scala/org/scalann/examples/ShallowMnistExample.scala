@@ -24,7 +24,7 @@ object ShallowMnistExample extends App {
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
 
   val momentum = nn.examplesGradient(trainExamples)
-  momentum *= 0 // TODO Implement zeroGradient
+  momentum *= 0.0 // TODO Implement zeroGradient
 
   for (iter <- 1 to 100) {
     val grad = nn.examplesGradient(trainExamples)

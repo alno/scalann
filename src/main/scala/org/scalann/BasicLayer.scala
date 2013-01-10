@@ -4,8 +4,12 @@ import breeze.linalg._
 
 abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
 
-  private[this] val weights: DenseMatrix[Double] = DenseMatrix.fill(outputSize, inputSize) { math.random * 2 - 1 }
-  private[this] val biases: DenseVector[Double] = DenseVector.fill(outputSize) { math.random * 2 - 1 }
+  val paramSize = outputSize * (inputSize + 1)
+
+  private[this] val params = DenseVector.fill(paramSize) { math.random * 2 - 1 }
+
+  private[this] val weights: DenseMatrix[Double] = new DenseMatrix(outputSize, inputSize, params.data)
+  private[this] val biases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize, 1, outputSize)
 
   def forward(input: DenseVector[Double]) = {
     val result = outputTransform(weights * input + biases)
@@ -13,6 +17,8 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
     result -> new Memo {
 
       def backward(derivation: DenseVector[Double]) = {
+        val resData = new Array[Double](paramSize)
+
         val dEh = derivation :* outputDerivation(result) // Derivation by activations
 
         val dEx = weights.t * dEh // Derivation by inputs
@@ -20,17 +26,17 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
         val dEw = dEh * input.t // Derivation by weights
         val dEb = dEh // Derivation by biases
 
-        dEx -> WeightBiasGradient(dEw, dEb)
+        new DenseMatrix(outputSize, inputSize, resData) := dEw
+        new DenseVector(resData, outputSize * inputSize, 1, outputSize) := dEb
+
+        dEx -> new DenseVector(resData, 0, 1, paramSize)
       }
 
     }
   }
 
-  def update(grad: Gradient) = grad match {
-    case WeightBiasGradient(weightGradient, biasGradient) =>
-      weights += weightGradient
-      biases += biasGradient
-  }
+  def update(gradient: DenseVector[Double]) =
+    params += gradient
 
   protected def outputTransform(xv: DenseVector[Double]): DenseVector[Double]
 

@@ -3,36 +3,13 @@ package org.scalann
 import breeze.linalg._
 import scala.annotation.tailrec
 
-case class FeedForwardNetworkGradient(layerGradients: List[Gradient]) extends Gradient {
-
-  def +=(that: Gradient) = that match {
-    case FeedForwardNetworkGradient(thatLayerGradients) =>
-      require(layerGradients.size == thatLayerGradients.size)
-
-      mergeGradients(layerGradients, thatLayerGradients)
-  }
-
-  def *=(factor: Double) {
-    layerGradients.foreach(_ *= factor)
-  }
-
-  @tailrec
-  private def mergeGradients(gradients: List[Gradient], thatGradients: List[Gradient]): Unit =
-    if (gradients.isEmpty) {
-      require(thatGradients.isEmpty)
-    } else {
-      gradients.head += thatGradients.head
-      mergeGradients(gradients.tail, thatGradients.tail)
-    }
-
-}
-
 class FeedForwardNetwork(layers: List[Stage]) extends Stage {
 
   validateLayers(layers.head, layers.tail)
 
-  def inputSize = layers.head.inputSize
-  def outputSize = layers.last.outputSize
+  val inputSize = layers.head.inputSize
+  val outputSize = layers.last.outputSize
+  val paramSize = layers.view.map(_.paramSize).sum
 
   override def apply(input: DenseVector[Double]): DenseVector[Double] =
     layers.foldLeft(input) { (in, layer) => layer(in) }
@@ -56,9 +33,9 @@ class FeedForwardNetwork(layers: List[Stage]) extends Stage {
   }
 
   @tailrec
-  private def backwardThrough(memos: List[Stage#Memo], derivation: DenseVector[Double], gradients: List[Gradient]): (DenseVector[Double], Gradient) = memos match {
+  private def backwardThrough(memos: List[Stage#Memo], derivation: DenseVector[Double], gradients: List[DenseVector[Double]]): (DenseVector[Double], DenseVector[Double]) = memos match {
     case Nil =>
-      derivation -> FeedForwardNetworkGradient(gradients)
+      derivation -> DenseVector.vertcat(gradients: _*)
 
     case memo :: prevMemos =>
       val (prevDerivation, gradient) = memo.backward(derivation)
@@ -66,21 +43,17 @@ class FeedForwardNetwork(layers: List[Stage]) extends Stage {
       backwardThrough(prevMemos, prevDerivation, gradient :: gradients)
   }
 
-  def update(grad: Gradient): Unit = grad match {
-    case FeedForwardNetworkGradient(layerGradients) =>
-      require(layerGradients.size == layers.size)
-
-      updateLayers(layers, layerGradients)
-  }
+  def update(gradient: DenseVector[Double]) =
+    updateLayers(layers, gradient, 0)
 
   @tailrec
-  private def updateLayers(layers: List[Stage], gradients: List[Gradient]): Unit =
-    if (layers.isEmpty) {
-      require(gradients.isEmpty)
-    } else {
-      layers.head.update(gradients.head)
-      updateLayers(layers.tail, gradients.tail)
-    }
+  private def updateLayers(layers: List[Stage], gradient: DenseVector[Double], pos: Int): Unit = layers match {
+    case Nil =>
+      require(pos == gradient.size, "Gradient size should be equal to sum of layer params sizes")
+    case layer :: others =>
+      layer.update(gradient(pos until (pos + layer.paramSize)))
+      updateLayers(layers.tail, gradient, pos + layer.paramSize)
+  }
 
   @tailrec
   private def validateLayers(head: Stage, tail: Traversable[Stage]): Unit =
