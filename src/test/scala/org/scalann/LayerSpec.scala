@@ -63,42 +63,58 @@ class LayerSpec extends FunSpec with ShouldMatchers {
     }
   }
 
-  List(new LogisticLayer(3, 2), new SoftmaxLayer(3, 2)).foreach { layer =>
-    describe(layer.getClass.getSimpleName + " with random params") {
-      val input = zv(3)
-      val target = DenseVector.zeros[Double](2)
-      target((math.random * target.size).toInt) = 1.0
+  val testLayerConfigs = Map(
+    new LogisticLayer(3, 2) -> logisticTarget(2),
+    new SoftmaxLayer(3, 2) -> softmaxTarget(2),
+    new LinearLayer(3, 2) -> linearTarget(2))
 
-      describe("output") {
-        val output = layer(input)
+  testLayerConfigs.foreach {
+    case (layer, target) =>
+      describe(layer.getClass.getSimpleName + " with random params") {
+        val input = zv(3)
 
-        it("should have correct size") {
-          output.size should be(2)
+        describe("output") {
+          val output = layer(input)
+
+          it("should have correct size") {
+            output.size should be(2)
+          }
         }
+
+        describe("derivations") {
+          val (output, memo) = layer.forward(input)
+          val (dInput, dParam) = memo.backward(output - target)
+
+          it("should have correct size") {
+            dInput.size should be(3)
+            dParam.size should be(8)
+          }
+
+          it("should be correct (in params)") {
+            checkParamGradient(layer, input, target, dParam)
+          }
+
+          it("should be correct (in input)") {
+            chechInputGradient(layer, input, target, dInput)
+          }
+
+        }
+
       }
-
-      describe("derivations") {
-        val (output, memo) = layer.forward(input)
-        val (dInput, dParam) = memo.backward(output - target)
-
-        it("should have correct size") {
-          dInput.size should be(3)
-          dParam.size should be(8)
-        }
-
-        it("should be correct (in params)") {
-          checkParamGradient(layer, input, target, dParam)
-        }
-
-        it("should be correct (in input)") {
-          chechInputGradient(layer, input, target, dInput)
-        }
-
-      }
-
-    }
 
   }
+
+  def softmaxTarget(size: Int) = {
+    val target = DenseVector.zeros[Double](size)
+    target((math.random * target.size).toInt) = 1.0
+    target
+  }
+
+  def logisticTarget(size: Int) =
+    DenseVector.fill[Double](size)(math.random)
+
+  def linearTarget(size: Int) =
+    DenseVector.fill[Double](size)(math.random * 4 - 2)
 
   val threshold = 1e-5
   val step = 1e-3
