@@ -43,8 +43,14 @@ class FeedForwardNetwork(layers: List[Stage]) extends Stage {
       backwardThrough(prevMemos, prevDerivation, gradient :: gradients)
   }
 
+  def params =
+    DenseVector.vertcat(layers.view.map(_.params): _*)
+
   def update(gradient: DenseVector[Double]) =
     updateLayers(layers, gradient, 0)
+
+  def cost(actual: DenseVector[Double], target: DenseVector[Double]) =
+    layers.last.cost(actual, target)
 
   @tailrec
   private def updateLayers(layers: List[Stage], gradient: DenseVector[Double], pos: Int): Unit = layers match {

@@ -14,6 +14,8 @@ abstract class Stage {
   def outputSize: Int
   def paramSize: Int
 
+  def params: DenseVector[Double]
+
   def apply(input: DenseVector[Double]): DenseVector[Double] =
     forward(input)._1
 
@@ -37,11 +39,12 @@ abstract class Stage {
     memo.backward(res - example._2)._2
   }
 
+  def exampleLoss(ex: (DenseVector[Double], DenseVector[Double])): Double =
+    cost(apply(ex._1), ex._2)
+
+  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double
+
   def examplesLoss(examples: Traversable[(DenseVector[Double], DenseVector[Double])]): Double =
-    -examples.view.map { ex =>
-      (apply(ex._1).activeValuesIterator zip ex._2.activeValuesIterator).map {
-        case (a, b) => math.log(a) * b
-      }.sum
-    }.sum / examples.size
+    examples.view.map(exampleLoss).sum / examples.size
 
 }
