@@ -18,26 +18,24 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
 
     result -> new Memo {
 
-      def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false) = {
-        val resData = new Array[Double](paramSize)
-
+      override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double]) {
         val dEh = if (outputDeriv)
           derivation :* outputDerivation(result) // Derivation by activations
         else
           derivation
 
-        val dEx = weights.t * dEh // Derivation by inputs
+        inputGradAcc += weights.t * dEh // Derivation by inputs
 
         val dEw = dEh * input.t // Derivation by weights
         val dEb = dEh // Derivation by biases
 
         // println(weights, dEx)
 
-        new DenseMatrix(outputSize, inputSize, resData) := dEw
-        new DenseVector(resData, outputSize * inputSize, 1, outputSize) := dEb
-
-        dEx -> new DenseVector(resData, 0, 1, paramSize)
+        new DenseMatrix(outputSize, inputSize, paramGradAcc.data) += dEw
+        new DenseVector(paramGradAcc.data, outputSize * inputSize, 1, outputSize) += dEb
       }
+
+      def layer = BasicLayer.this
 
     }
   }

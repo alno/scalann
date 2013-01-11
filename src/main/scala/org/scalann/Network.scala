@@ -22,9 +22,10 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
     case Nil =>
       input -> new Memo {
 
-        def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false) =
+        override def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false) =
           backwardThrough(memos, derivation, outputDeriv, Nil)
 
+        def layer = FeedForwardNetwork.this
       }
     case layer :: others =>
       val (output, memo) = layer.forward(input)
