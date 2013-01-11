@@ -18,10 +18,13 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
 
     result -> new Memo {
 
-      def backward(derivation: DenseVector[Double]) = {
+      def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false) = {
         val resData = new Array[Double](paramSize)
 
-        val dEh = derivation // :* outputDerivation(result) // Derivation by activations
+        val dEh = if (outputDeriv)
+          derivation :* outputDerivation(result) // Derivation by activations
+        else
+          derivation
 
         val dEx = weights.t * dEh // Derivation by inputs
 

@@ -18,8 +18,8 @@ object ShallowMnistExample extends App {
       input -> output
   }
 
-  val trainExamples = examples.take(50)
-  val testExamples = examples.drop(trainExamples.size).take(5000)
+  val trainExamples = examples.take(5000)
+  val testExamples = examples.drop(trainExamples.size).take(10000)
 
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
 

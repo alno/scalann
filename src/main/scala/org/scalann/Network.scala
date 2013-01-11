@@ -3,7 +3,7 @@ package org.scalann
 import breeze.linalg._
 import scala.annotation.tailrec
 
-class FeedForwardNetwork(layers: List[Stage]) extends Stage {
+class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
 
   validateLayers(layers.head, layers.tail)
 
@@ -22,8 +22,8 @@ class FeedForwardNetwork(layers: List[Stage]) extends Stage {
     case Nil =>
       input -> new Memo {
 
-        def backward(derivation: DenseVector[Double]) =
-          backwardThrough(memos, derivation, Nil)
+        def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false) =
+          backwardThrough(memos, derivation, outputDeriv, Nil)
 
       }
     case layer :: others =>
@@ -33,14 +33,14 @@ class FeedForwardNetwork(layers: List[Stage]) extends Stage {
   }
 
   @tailrec
-  private def backwardThrough(memos: List[Stage#Memo], derivation: DenseVector[Double], gradients: List[DenseVector[Double]]): (DenseVector[Double], DenseVector[Double]) = memos match {
+  private def backwardThrough(memos: List[Stage#Memo], derivation: DenseVector[Double], outputDeriv: Boolean, gradients: List[DenseVector[Double]]): (DenseVector[Double], DenseVector[Double]) = memos match {
     case Nil =>
       derivation -> DenseVector.vertcat(gradients: _*)
 
     case memo :: prevMemos =>
-      val (prevDerivation, gradient) = memo.backward(derivation)
+      val (prevDerivation, gradient) = memo.backward(derivation, outputDeriv)
 
-      backwardThrough(prevMemos, prevDerivation, gradient :: gradients)
+      backwardThrough(prevMemos, prevDerivation, true, gradient :: gradients)
   }
 
   def params =

@@ -6,7 +6,7 @@ abstract class Stage {
 
   trait Memo {
 
-    def backward(derivation: DenseVector[Double]): (DenseVector[Double], DenseVector[Double])
+    def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false): (DenseVector[Double], DenseVector[Double])
 
   }
 
