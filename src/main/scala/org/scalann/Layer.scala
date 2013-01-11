@@ -6,8 +6,6 @@ abstract class Stage {
 
   trait Memo {
 
-    def layer: Stage
-
     def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false): (DenseVector[Double], DenseVector[Double]) = {
       val inputGrad = DenseVector.zeros[Double](inputSize)
       val paramGrad = DenseVector.zeros[Double](paramSize)
@@ -19,11 +17,11 @@ abstract class Stage {
 
     def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double]) {
       val (inputGrad, paramGrad) = backward(derivation, outputDeriv)
-      
+
       inputGradAcc += inputGrad
       paramGradAcc += paramGrad
     }
-    
+
   }
 
   def inputSize: Int

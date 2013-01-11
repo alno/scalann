@@ -47,6 +47,30 @@ class NetworkSpec extends BaseSpec {
 
         }
 
+        describe("derivations returned by backwardAdd") {
+          val data = Array.fill(100)(0.0)
+          val dInput = new DenseVector(data, 10, 1, 4)
+          val dParam = new DenseVector(data, 20, 1, 23)
+
+          val (output, memo) = net.forward(input)
+
+          memo.backwardAdd(output - target, false)(dInput, dParam)
+
+          it("should have correct size") {
+            dInput.size should be(4)
+            dParam.size should be(23)
+          }
+
+          it("should be correct (in params)") {
+            checkParamGradient(net, input, target, dParam)
+          }
+
+          it("should be correct (in input)") {
+            chechInputGradient(net, input, target, dInput)
+          }
+
+        }
+
       }
 
   }

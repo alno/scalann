@@ -81,9 +81,33 @@ class LayerSpec extends BaseSpec {
           }
         }
 
-        describe("derivations") {
+        describe("derivations returned by backward") {
           val (output, memo) = layer.forward(input)
           val (dInput, dParam) = memo.backward(output - target)
+
+          it("should have correct size") {
+            dInput.size should be(3)
+            dParam.size should be(8)
+          }
+
+          it("should be correct (in params)") {
+            checkParamGradient(layer, input, target, dParam)
+          }
+
+          it("should be correct (in input)") {
+            chechInputGradient(layer, input, target, dInput)
+          }
+
+        }
+
+        describe("derivations returned by backwardAdd") {
+          val data = Array.fill(100)(0.0)
+          val dInput = new DenseVector(data, 10, 1, 3)
+          val dParam = new DenseVector(data, 20, 1, 8)
+
+          val (output, memo) = layer.forward(input)
+
+          memo.backwardAdd(output - target, false)(dInput, dParam)
 
           it("should have correct size") {
             dInput.size should be(3)

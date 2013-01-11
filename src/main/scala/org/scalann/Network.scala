@@ -14,34 +14,41 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
   override def apply(input: DenseVector[Double]): DenseVector[Double] =
     layers.foldLeft(input) { (in, layer) => layer(in) }
 
-  def forward(input: DenseVector[Double]): (DenseVector[Double], Memo) =
-    forwardThrough(layers, input, Nil)
+  def forward(input: DenseVector[Double]): (DenseVector[Double], Memo) = {
+    val memos = new Array[Stage#Memo](layers.size)
+    var current = input
 
-  @tailrec
-  private def forwardThrough(layers: List[Stage], input: DenseVector[Double], memos: List[Stage#Memo]): (DenseVector[Double], Memo) = layers match {
-    case Nil =>
-      input -> new Memo {
+    for (i <- 0 until layers.size) {
+      val (output, memo) = layers(i).forward(current)
 
-        override def backward(derivation: DenseVector[Double], outputDeriv: Boolean = false) =
-          backwardThrough(memos, derivation, outputDeriv, Nil)
+      current = output
+      memos(i) = memo
+    }
 
-        def layer = FeedForwardNetwork.this
+    current -> new Memo {
+
+      override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double]) {
+        var curOutputDeriv = outputDeriv
+        var curDerivation = derivation
+        var curEndPos = paramSize
+        var i = layers.size - 1
+
+        while (i >= 0) {
+          val nextEndPos = curEndPos - layers(i).paramSize
+          val nextDerivation = DenseVector.zeros[Double](layers(i).inputSize)
+
+          memos(i).backwardAdd(curDerivation, curOutputDeriv)(nextDerivation, paramGradAcc(nextEndPos until curEndPos))
+
+          curEndPos = nextEndPos
+          curDerivation = nextDerivation
+          curOutputDeriv = true
+          i -= 1
+        }
+
+        inputGradAcc += curDerivation
       }
-    case layer :: others =>
-      val (output, memo) = layer.forward(input)
 
-      forwardThrough(others, output, memo :: memos)
-  }
-
-  @tailrec
-  private def backwardThrough(memos: List[Stage#Memo], derivation: DenseVector[Double], outputDeriv: Boolean, gradients: List[DenseVector[Double]]): (DenseVector[Double], DenseVector[Double]) = memos match {
-    case Nil =>
-      derivation -> DenseVector.vertcat(gradients: _*)
-
-    case memo :: prevMemos =>
-      val (prevDerivation, gradient) = memo.backward(derivation, outputDeriv)
-
-      backwardThrough(prevMemos, prevDerivation, true, gradient :: gradients)
+    }
   }
 
   def params =
