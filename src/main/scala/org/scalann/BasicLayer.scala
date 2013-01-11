@@ -2,6 +2,9 @@ package org.scalann
 
 import breeze.linalg._
 import scala.math._
+import org.netlib.blas.Dgemv
+import org.netlib.blas.Dgemm
+import org.netlib.blas.Daxpy
 
 abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
 
@@ -26,20 +29,29 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
         require(paramGradAcc.size == paramSize)
         require(paramGradAcc.stride == 1)
 
-        val dEh = if (outputDeriv) {
-          val r = derivation
-          outputDerivationTransform(r, result)
-          r
-        } else
-          derivation
+        var dEh = derivation // Derivation by internal activations
 
-        inputGradAcc += weights.t * dEh // Derivation by inputs
+        if (outputDeriv) { // If output derivation should be transformed
+          dEh = dEh.copy // Copy it
+          outputDerivationTransform(dEh, result) // Transform (destructively)
+        }
 
-        val dEw = dEh * input.t // Derivation by weights
-        val dEb = dEh // Derivation by biases
+        // inputGradAcc += weights.t * dEh // Append derivation by inputs
+        Dgemv.dgemv("t", outputSize, inputSize,
+          1.0, weights.data, weights.offset, weights.majorStride,
+          dEh.data, dEh.offset, 1,
+          1.0, inputGradAcc.data, inputGradAcc.offset, inputGradAcc.stride)
 
-        new DenseMatrix(outputSize, inputSize, paramGradAcc.data, paramGradAcc.offset) += dEw
-        new DenseVector(paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1, outputSize) += dEb
+        // paramGradAcc(dEw) += dEh * input.t // Derivation by weights
+        Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
+          1.0, dEh.data, dEh.offset, outputSize,
+          input.data, input.offset, inputSize,
+          1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
+
+        // paramGradAcc(dEb) += dEh // Derivation by biases
+        Daxpy.daxpy(outputSize, 1.0,
+          dEh.data, dEh.offset, 1,
+          paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1);
       }
 
     }
