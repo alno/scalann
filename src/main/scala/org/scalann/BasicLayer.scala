@@ -1,7 +1,9 @@
 package org.scalann
 
 import breeze.linalg._
-import scala.math._
+import breeze.numerics._
+import scala.math.exp
+
 import org.netlib.blas.Dgemv
 import org.netlib.blas.Dgemm
 import org.netlib.blas.Daxpy
@@ -89,19 +91,8 @@ class LogisticLayer(inputSize: Int, outputSize: Int) extends BasicLayer(inputSiz
 
   private[this] val tiny = 1e-300
 
-  protected def outputTransform(v: DenseVector[Double]) {
-    val data = v.data
-    val stride = v.stride
-
-    var pos = v.offset
-    var ind = 0
-
-    while (ind < v.size) {
-      data(pos) = 1 / (1 + exp(-data(pos)))
-      pos += stride
-      ind += 1
-    }
-  }
+  protected def outputTransform(v: DenseVector[Double]) =
+    sigmoid.inPlace(v)
 
   protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double]) {
     val ddata = dv.data
