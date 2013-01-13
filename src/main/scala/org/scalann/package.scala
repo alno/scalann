@@ -2,6 +2,6 @@ package org
 
 package object scalann {
 
-  implicit def stageIo(stage: Stage) = new StageIO(stage)
+  implicit def stageIo(stage: Parametrized) = new StageIO(stage)
 
 }

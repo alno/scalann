@@ -2,7 +2,7 @@ package org.scalann
 
 import breeze.linalg._
 
-abstract class Stage {
+abstract class Stage extends Parametrized {
 
   trait Memo {
 

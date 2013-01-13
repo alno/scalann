@@ -22,6 +22,7 @@ class LearningBench extends SimpleBenchmark {
 
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
   val l = new LogisticLayer(w * h, 10)
+  val rbm = new Rbm(w * h, 10)
 
   override def setUp {
     examples.size
@@ -45,6 +46,11 @@ class LearningBench extends SimpleBenchmark {
   def timeNetworkForwardBackward(reps: Int) {
     for (i <- 1 to reps)
       nn.forward(example._1)._2.backward(example._2)
+  }
+
+  def timeRbmGradient(reps: Int) {
+    for (i <- 1 to reps)
+      rbm.gradient(example._1)
   }
 
 }

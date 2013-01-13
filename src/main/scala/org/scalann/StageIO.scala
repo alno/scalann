@@ -4,7 +4,7 @@ import java.io.DataInput
 import java.io.DataOutput
 import breeze.linalg._
 
-class StageIO(stage: Stage) {
+class StageIO(stage: Parametrized) {
 
   def restore(in: DataInput): Unit =
     stage.assignParams(DenseVector.fill(stage.paramSize) { in.readDouble })

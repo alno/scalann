@@ -29,8 +29,7 @@ object ShallowMnistExample extends App {
 
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 100), new SoftmaxLayer(100, 10)))
 
-  val momentum = nn.examplesGradient(trainExamples)
-  momentum *= 0.0 // TODO Implement zeroGradient
+  val momentum = DenseVector.zeros[Double](nn.paramSize)
 
   for (iter <- 1 to 100) {
     val wd = nn.paramsDecay :* nn.params
