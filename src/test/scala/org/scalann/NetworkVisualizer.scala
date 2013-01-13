@@ -18,31 +18,29 @@ object NetworkVisualizer extends App {
     new java.io.File("/home/alno/image-wd.png"),
     draw = drawPlots(ll.weights),
     width = 1000,
-    height = 1000)
+    height = 500)
 
   println("nn saved")
 
-  val rbm = new Rbm(w * h, 100)
-  
+  val rbm = new Rbm(w * h, 50)
+
   rbm.restore(new DataInputStream(new FileInputStream("/home/alno/nn-rbm.dat")))
-  
-  
+
   ExportGraphics.writeFile(
     new java.io.File("/home/alno/image-rbm.png"),
     draw = drawPlots(rbm.weights),
     width = 1000,
-    height = 1000)
-    
-    
+    height = 500)
+
   println("rbm saved")
-  
+
   def drawPlots(weights: DenseMatrix[Double])(g2d: Graphics2D) {
     val plotWidth = 100
     val plotHeight = 100
 
     for (x <- 0 until 10)
-      for (y <- 0 until 10) {
-        val i = x * 10 + y
+      for (y <- 0 until 5) {
+        val i = x * 5 + y
         val row = weights(i, ::).copy
         val img = image(new DenseMatrix(w, h, row.data, row.offset))
         val plot = new Plot

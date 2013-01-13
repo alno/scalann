@@ -29,7 +29,7 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
 
     result -> new Memo {
 
-      override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double]) {
+      override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double], factor: Double) {
         require(inputGradAcc.size == inputSize)
         require(paramGradAcc.size == paramSize)
         require(paramGradAcc.stride == 1)
@@ -41,22 +41,26 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
           outputDerivationTransform(dEh, result) // Transform (destructively)
         }
 
-        // inputGradAcc += weights.t * dEh // Append derivation by inputs
-        Dgemv.dgemv("t", outputSize, inputSize,
-          1.0, weights.data, weights.offset, weights.majorStride,
-          dEh.data, dEh.offset, 1,
-          1.0, inputGradAcc.data, inputGradAcc.offset, inputGradAcc.stride)
+        if (inputGradAcc != null) {
+          // inputGradAcc += weights.t * dEh * factor// Append derivation by inputs
+          Dgemv.dgemv("t", outputSize, inputSize,
+            factor, weights.data, weights.offset, weights.majorStride,
+            dEh.data, dEh.offset, 1,
+            1.0, inputGradAcc.data, inputGradAcc.offset, inputGradAcc.stride)
+        }
 
-        // paramGradAcc(dEw) += dEh * input.t // Derivation by weights
-        Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
-          1.0, dEh.data, dEh.offset, outputSize,
-          input.data, input.offset, inputSize,
-          1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
+        if (paramGradAcc != null) {
+          // paramGradAcc(dEw) += dEh * input.t * factor // Derivation by weights
+          Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
+            factor, dEh.data, dEh.offset, outputSize,
+            input.data, input.offset, inputSize,
+            1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
 
-        // paramGradAcc(dEb) += dEh // Derivation by biases
-        Daxpy.daxpy(outputSize, 1.0,
-          dEh.data, dEh.offset, 1,
-          paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1);
+          // paramGradAcc(dEb) += dEh * factor // Derivation by biases
+          Daxpy.daxpy(outputSize, factor,
+            dEh.data, dEh.offset, 1,
+            paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1);
+        }
       }
 
     }

@@ -27,7 +27,7 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
 
     current -> new Memo {
 
-      override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double]) {
+      override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double], factor: Double) {
         var curOutputDeriv = outputDeriv
         var curDerivation = derivation
         var curEndPos = paramSize
@@ -37,7 +37,7 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
           val nextEndPos = curEndPos - layers(i).paramSize
           val nextDerivation = DenseVector.zeros[Double](layers(i).inputSize)
 
-          memos(i).backwardAdd(curDerivation, curOutputDeriv)(nextDerivation, paramGradAcc(nextEndPos until curEndPos))
+          memos(i).backwardAdd(curDerivation, curOutputDeriv)(nextDerivation, paramGradAcc(nextEndPos until curEndPos), factor)
 
           curEndPos = nextEndPos
           curDerivation = nextDerivation
@@ -45,7 +45,8 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
           i -= 1
         }
 
-        inputGradAcc += curDerivation
+        if (inputGradAcc != null)
+          inputGradAcc += curDerivation
       }
 
     }

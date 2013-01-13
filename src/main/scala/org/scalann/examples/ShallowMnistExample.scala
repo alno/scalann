@@ -27,7 +27,7 @@ object ShallowMnistExample extends App {
   val weightDecay = 0.05
   val momentumMult = 0.7
 
-  val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 100), new SoftmaxLayer(100, 10)))
+  val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 50), new SoftmaxLayer(50, 10)))
 
   val momentum = DenseVector.zeros[Double](nn.paramSize)
 
@@ -40,7 +40,7 @@ object ShallowMnistExample extends App {
 
     println(iter + ": " + (exLoss + wdLoss) + ", " + exLoss + " + " + wdLoss)
 
-    val grad = nn.examplesGradient(trainExamples)
+    val grad = nn.gradient(trainExamples)
     grad *= -learningRate
 
     momentum *= momentumMult

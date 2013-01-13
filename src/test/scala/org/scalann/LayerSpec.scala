@@ -107,7 +107,7 @@ class LayerSpec extends BaseSpec {
 
           val (output, memo) = layer.forward(input)
 
-          memo.backwardAdd(output - target, false)(dInput, dParam)
+          memo.backwardAdd(output - target, false)(dInput, dParam, 1.0)
 
           it("should have correct size") {
             dInput.size should be(3)

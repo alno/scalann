@@ -10,12 +10,12 @@ abstract class Stage extends Parametrized {
       val inputGrad = DenseVector.zeros[Double](inputSize)
       val paramGrad = DenseVector.zeros[Double](paramSize)
 
-      backwardAdd(derivation, outputDeriv)(inputGrad, paramGrad)
+      backwardAdd(derivation, outputDeriv)(inputGrad, paramGrad, 1.0)
 
       (inputGrad, paramGrad)
     }
 
-    def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double]) {
+    def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean = false)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double], factor: Double) {
       val (inputGrad, paramGrad) = backward(derivation, outputDeriv)
 
       inputGradAcc += inputGrad
@@ -47,20 +47,24 @@ abstract class Stage extends Parametrized {
 
   def assignParams(grad: DenseVector[Double])
 
-  def examplesGradient(examples: Traversable[(DenseVector[Double], DenseVector[Double])]) = {
-    val grad = exampleGradient(examples.head)
+  def gradientAdd(examples: Traversable[(DenseVector[Double], DenseVector[Double])])(paramGradAcc: DenseVector[Double], factor: Double): Unit =
+    examples.foreach { gradientAdd(_)(paramGradAcc, factor / examples.size) }
 
-    examples.tail.foreach { ex =>
-      grad += exampleGradient(ex)
-    }
+  def gradient(examples: Traversable[(DenseVector[Double], DenseVector[Double])]): DenseVector[Double] = {
+    val res = DenseVector.zeros[Double](paramSize)
+    gradientAdd(examples)(res, 1.0)
+    res
+  }
 
-    grad *= 1.0 / examples.size
+  def gradient(example: (DenseVector[Double], DenseVector[Double])) = {
+    val grad = DenseVector.zeros[Double](paramSize)
+    gradientAdd(example)(grad, 1.0)
     grad
   }
 
-  def exampleGradient(example: (DenseVector[Double], DenseVector[Double])) = {
+  def gradientAdd(example: (DenseVector[Double], DenseVector[Double]))(paramGradientAcc: DenseVector[Double], factor: Double) = {
     val (res, memo) = forward(example._1)
-    memo.backward(res - example._2)._2
+    memo.backwardAdd(res - example._2)(null, paramGradientAcc, factor)
   }
 
   def exampleLoss(ex: (DenseVector[Double], DenseVector[Double])): Double =

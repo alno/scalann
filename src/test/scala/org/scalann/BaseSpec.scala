@@ -9,7 +9,7 @@ import java.io.{ DataOutputStream, DataInputStream, ByteArrayOutputStream, ByteA
 
 abstract class BaseSpec extends FunSpec with ShouldMatchers {
 
-  def vec(elems: Double*) = DenseVector(elems: _*)  
+  def vec(elems: Double*) = DenseVector(elems: _*)
   def vecRand(size: Int) = DenseVector.fill[Double](size)(math.random)
 
   val gradientThreshold = 1e-5

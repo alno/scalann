@@ -19,7 +19,10 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Parametrized {
   def assignParams(newParams: DenseVector[Double]) =
     params := newParams
 
-  def gradientAdd(example: DenseVector[Double])(paramGradAcc: DenseVector[Double], factor: Double) = {
+  def gradientAdd(example: DenseVector[Double])(paramGradAcc: DenseVector[Double], factor: Double) {
+    if (paramGradAcc == null)
+      return
+
     val visibleData0 = sample(example)
 
     val hiddenData0 = weights * visibleData0
@@ -33,13 +36,13 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Parametrized {
     val hiddenProb1 = weights * visibleData1
     sigmoid.inPlace(hiddenProb1)
 
-    // paramGradAcc += hiddenData0 * visibleData0.t
+    // paramGradAcc += hiddenData0 * visibleData0.t * factor
     Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
       factor, hiddenData0.data, hiddenData0.offset, outputSize,
       visibleData0.data, visibleData0.offset, inputSize,
       1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
 
-    // paramGradAcc -= hiddenProb1 * visibleData1.t
+    // paramGradAcc -= hiddenProb1 * visibleData1.t * factor
     Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
       -factor, hiddenProb1.data, hiddenProb1.offset, outputSize,
       visibleData1.data, visibleData1.offset, inputSize,
@@ -53,11 +56,11 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Parametrized {
   }
 
   def gradientAdd(examples: Traversable[DenseVector[Double]])(paramGradAcc: DenseVector[Double], factor: Double): Unit =
-    examples.foreach { gradientAdd(_)(paramGradAcc, factor) }
+    examples.foreach { gradientAdd(_)(paramGradAcc, factor / examples.size) }
 
   def gradient(examples: Traversable[DenseVector[Double]]): DenseVector[Double] = {
     val res = DenseVector.zeros[Double](paramSize)
-    gradientAdd(examples)(res, 1.0 / examples.size)
+    gradientAdd(examples)(res, 1.0)
     res
   }
 

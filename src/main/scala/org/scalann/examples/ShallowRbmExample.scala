@@ -20,14 +20,14 @@ object ShallowRbmExample extends App {
   val weightDecay = 0.05
   val momentumMult = 0.3
 
-  val rbm = new Rbm(w * h, 100)
+  val rbm = new Rbm(w * h, 50)
 
   val momentum = DenseVector.zeros[Double](rbm.paramSize)
 
-  for (iter <- 1 to 200) {
+  for (iter <- 1 to 500) {
     println(iter)
 
-    val grad = rbm.gradient(trainImages) 
+    val grad = rbm.gradient(trainImages)
     grad *= learningRate
 
     momentum *= momentumMult
