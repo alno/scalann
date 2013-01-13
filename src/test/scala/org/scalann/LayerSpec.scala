@@ -64,16 +64,16 @@ class LayerSpec extends BaseSpec {
   }
 
   val testLayerConfigs = Map(
-    new LogisticLayer(3, 2) -> logisticTarget(2),
-    new SoftmaxLayer(3, 2) -> softmaxTarget(2),
-    new LinearLayer(3, 2) -> linearTarget(2))
+    new LogisticLayer(3, 2) -> logisticTarget _,
+    new SoftmaxLayer(3, 2) -> softmaxTarget _,
+    new LinearLayer(3, 2) -> linearTarget _)
 
   testLayerConfigs.foreach {
-    case (layer, target) =>
+    case (layer, targetFun) =>
       describe(layer.getClass.getSimpleName + " with random params") {
-        val input = zv(3)
 
         describe("output") {
+          val input = zv(3)
           val output = layer(input)
 
           it("should have correct size") {
@@ -82,6 +82,8 @@ class LayerSpec extends BaseSpec {
         }
 
         describe("derivations returned by backward") {
+          val input = zv(3)
+          val target = targetFun(2)
           val (output, memo) = layer.forward(input)
           val (dInput, dParam) = memo.backward(output - target)
 
@@ -91,35 +93,49 @@ class LayerSpec extends BaseSpec {
           }
 
           it("should be correct (in params)") {
-            checkParamGradient(layer, input, target, dParam)
+            checkParamGradient(layer, input, target, dParam, 1.0)
           }
 
           it("should be correct (in input)") {
-            checkInputGradient(layer, input, target, dInput)
+            checkInputGradient(layer, input, target, dInput, 1.0)
           }
 
         }
 
         describe("derivations returned by backwardAdd") {
+          val input = zv(3)
+          val target = targetFun(2)
           val data = Array.fill(100)(0.0)
           val dInput = new DenseVector(data, 10, 1, 3)
           val dParam = new DenseVector(data, 20, 1, 8)
 
           val (output, memo) = layer.forward(input)
 
-          memo.backwardAdd(output - target, false)(dInput, dParam, 1.0)
+          memo.backwardAdd(output - target, false)(dInput, 0.4, dParam, 0.7)
 
           it("should have correct size") {
             dInput.size should be(3)
             dParam.size should be(8)
           }
 
-          it("should be correct (in params)") {
-            checkParamGradient(layer, input, target, dParam)
+          it("should be correct (in input)") {
+            checkInputGradient(layer, input, target, dInput, 0.4)
           }
 
-          it("should be correct (in input)") {
-            checkInputGradient(layer, input, target, dInput)
+          it("should be correct (in params)") {
+            checkParamGradient(layer, input, target, dParam, 0.7)
+          }
+
+        }
+
+        describe("derivations returned by gradient with multiple examples") {
+          val inputs = List.fill(10) { zv(3) }
+          val targets = List.fill(10) { targetFun(2) }
+
+          val gradient = layer.gradient(inputs zip targets)
+
+          it("should be correct (in params)") {
+            checkParamGradientMulti(layer, inputs, targets, gradient)
           }
 
         }

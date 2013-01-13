@@ -10,16 +10,19 @@ abstract class Stage extends Parametrized {
       val inputGrad = DenseVector.zeros[Double](inputSize)
       val paramGrad = DenseVector.zeros[Double](paramSize)
 
-      backwardAdd(derivation, outputDeriv)(inputGrad, paramGrad, 1.0)
+      backwardAdd(derivation, outputDeriv)(inputGrad, 1.0, paramGrad, 1.0)
 
       (inputGrad, paramGrad)
     }
 
-    def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean = false)(inputGradAcc: DenseVector[Double], paramGradAcc: DenseVector[Double], factor: Double) {
+    def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean = false)(inputGradAcc: DenseVector[Double], inputFactor: Double, paramGradAcc: DenseVector[Double], paramFactor: Double) {
       val (inputGrad, paramGrad) = backward(derivation, outputDeriv)
 
-      inputGradAcc += inputGrad
-      paramGradAcc += paramGrad
+      if (inputGradAcc != null)
+        inputGradAcc += inputGrad * inputFactor
+
+      if (paramGradAcc != null)
+        paramGradAcc += paramGrad * paramFactor
     }
 
   }
@@ -64,7 +67,7 @@ abstract class Stage extends Parametrized {
 
   def gradientAdd(example: (DenseVector[Double], DenseVector[Double]))(paramGradientAcc: DenseVector[Double], factor: Double) = {
     val (res, memo) = forward(example._1)
-    memo.backwardAdd(res - example._2)(null, paramGradientAcc, factor)
+    memo.backwardAdd(res - example._2)(null, Double.NaN, paramGradientAcc, factor)
   }
 
   def exampleLoss(ex: (DenseVector[Double], DenseVector[Double])): Double =
