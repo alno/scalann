@@ -95,7 +95,7 @@ class LayerSpec extends BaseSpec {
           }
 
           it("should be correct (in input)") {
-            chechInputGradient(layer, input, target, dInput)
+            checkInputGradient(layer, input, target, dInput)
           }
 
         }
@@ -119,9 +119,13 @@ class LayerSpec extends BaseSpec {
           }
 
           it("should be correct (in input)") {
-            chechInputGradient(layer, input, target, dInput)
+            checkInputGradient(layer, input, target, dInput)
           }
 
+        }
+
+        describe("should be saved and correctly restored") {
+          checkSaveRestore(layer)
         }
 
       }

@@ -57,8 +57,11 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
     }
   }
 
-  def update(gradient: DenseVector[Double]) =
+  def updateParams(gradient: DenseVector[Double]) =
     params += gradient
+
+  def assignParams(newParams: DenseVector[Double]) =
+    params := newParams
 
   protected def outputTransform(v: DenseVector[Double])
 

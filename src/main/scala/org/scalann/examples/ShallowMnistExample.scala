@@ -33,7 +33,7 @@ object ShallowMnistExample extends App {
     momentum *= 0.7
     momentum += grad
 
-    nn.update(momentum)
+    nn.updateParams(momentum)
 
     println(nn.examplesLoss(trainExamples))
   }

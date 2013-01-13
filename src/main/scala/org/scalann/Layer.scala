@@ -35,7 +35,9 @@ abstract class Stage {
 
   def forward(input: DenseVector[Double]): (DenseVector[Double], Memo)
 
-  def update(grad: DenseVector[Double])
+  def updateParams(grad: DenseVector[Double])
+
+  def assignParams(grad: DenseVector[Double])
 
   def examplesGradient(examples: Traversable[(DenseVector[Double], DenseVector[Double])]) = {
     val grad = exampleGradient(examples.head)

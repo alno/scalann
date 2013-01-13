@@ -54,20 +54,20 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
   def params =
     DenseVector.vertcat(layers.view.map(_.params): _*)
 
-  def update(gradient: DenseVector[Double]) =
-    updateLayers(layers, gradient, 0)
+  def updateParams(gradient: DenseVector[Double]) =
+    layers.foldLeft(0) { (pos, layer) =>
+      layer.updateParams(gradient(pos until (pos + layer.paramSize)))
+      pos + layer.paramSize
+    }
+
+  def assignParams(newParams: DenseVector[Double]) =
+    layers.foldLeft(0) { (pos, layer) =>
+      layer.assignParams(newParams(pos until (pos + layer.paramSize)))
+      pos + layer.paramSize
+    }
 
   def cost(actual: DenseVector[Double], target: DenseVector[Double]) =
     layers.last.cost(actual, target)
-
-  @tailrec
-  private def updateLayers(layers: List[Stage], gradient: DenseVector[Double], pos: Int): Unit = layers match {
-    case Nil =>
-      require(pos == gradient.size, "Gradient size should be equal to sum of layer params sizes")
-    case layer :: others =>
-      layer.update(gradient(pos until (pos + layer.paramSize)))
-      updateLayers(layers.tail, gradient, pos + layer.paramSize)
-  }
 
   @tailrec
   private def validateLayers(head: Stage, tail: Traversable[Stage]): Unit =

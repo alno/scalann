@@ -42,7 +42,7 @@ class NetworkSpec extends BaseSpec {
           }
 
           it("should be correct (in input)") {
-            chechInputGradient(net, input, target, dInput)
+            checkInputGradient(net, input, target, dInput)
           }
 
         }
@@ -66,7 +66,7 @@ class NetworkSpec extends BaseSpec {
           }
 
           it("should be correct (in input)") {
-            chechInputGradient(net, input, target, dInput)
+            checkInputGradient(net, input, target, dInput)
           }
 
         }

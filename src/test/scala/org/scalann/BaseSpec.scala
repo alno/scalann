@@ -5,6 +5,8 @@ import org.scalatest.matchers.ShouldMatchers
 import breeze.linalg._
 import scala.math._
 
+import java.io.{ DataOutputStream, DataInputStream, ByteArrayOutputStream, ByteArrayInputStream }
+
 abstract class BaseSpec extends FunSpec with ShouldMatchers {
 
   def vec(elems: Double*) = DenseVector(elems: _*)
@@ -27,16 +29,16 @@ abstract class BaseSpec extends FunSpec with ShouldMatchers {
       var temp = 0.0
 
       for (j <- 0 until distances.size) {
-        layer.update(offset * distances(j))
+        layer.updateParams(offset * distances(j))
         temp += layer.exampleLoss(input -> target) * weights(j)
-        layer.update(oldParams - layer.params)
+        layer.assignParams(oldParams)
       }
 
       gradient(i) should be((temp / gradientStep) plusOrMinus gradientThreshold)
     }
   }
 
-  def chechInputGradient(layer: Stage, input: DenseVector[Double], target: DenseVector[Double], gradient: DenseVector[Double]) {
+  def checkInputGradient(layer: Stage, input: DenseVector[Double], target: DenseVector[Double], gradient: DenseVector[Double]) {
     for (i <- 0 until gradient.size) {
       val offset = DenseVector.zeros[Double](input.size)
       offset(i) = gradientStep
@@ -49,6 +51,18 @@ abstract class BaseSpec extends FunSpec with ShouldMatchers {
 
       gradient(i) should be((temp / gradientStep) plusOrMinus gradientThreshold)
     }
+  }
+
+  def checkSaveRestore(layer: Stage) {
+    val baos = new ByteArrayOutputStream
+    val oldParams = layer.params.copy
+
+    layer.save(new DataOutputStream(baos))
+    layer.assignParams(DenseVector.fill(layer.paramSize) { math.random * 10 - 5 })
+    layer.params should not be (oldParams)
+
+    layer.restore(new DataInputStream(new ByteArrayInputStream(baos.toByteArray)))
+    layer.params should be(oldParams)
   }
 
 }
