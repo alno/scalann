@@ -2,6 +2,8 @@ package org.scalann.examples
 
 import org.scalann._
 import breeze.linalg._
+import java.io.DataOutputStream
+import java.io.FileOutputStream
 
 object ShallowMnistExample extends App {
 
@@ -21,7 +23,7 @@ object ShallowMnistExample extends App {
   val trainExamples = examples.take(5000)
   val testExamples = examples.drop(trainExamples.size).take(10000)
 
-  val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
+  val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 100), new SoftmaxLayer(100, 10)))
 
   val momentum = nn.examplesGradient(trainExamples)
   momentum *= 0.0 // TODO Implement zeroGradient
@@ -46,5 +48,9 @@ object ShallowMnistExample extends App {
   }.size * 1.0 / testExamples.size
 
   println("Test error rate: " + testErrorRate)
+
+  nn.save(new DataOutputStream(new FileOutputStream("/home/alno/nn-simple.dat")))
+
+  println("Params saved")
 
 }

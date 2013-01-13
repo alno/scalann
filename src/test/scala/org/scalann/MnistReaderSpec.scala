@@ -2,7 +2,6 @@ package org.scalann
 
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
-import breeze.plot._
 import breeze.linalg._
 
 class MnistReaderSpec extends FunSpec with ShouldMatchers {

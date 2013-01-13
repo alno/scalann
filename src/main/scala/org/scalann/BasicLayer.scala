@@ -12,8 +12,8 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
 
   val params = DenseVector.fill(paramSize) { math.random * 2 - 1 }
 
-  private[this] val weights: DenseMatrix[Double] = new DenseMatrix(outputSize, inputSize, params.data)
-  private[this] val biases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize, 1, outputSize)
+  val weights: DenseMatrix[Double] = new DenseMatrix(outputSize, inputSize, params.data)
+  val biases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize, 1, outputSize)
 
   def forward(input: DenseVector[Double]) = {
     val result = weights * input
