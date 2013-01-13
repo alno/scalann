@@ -12,7 +12,7 @@ object NetworkVisualizer extends App {
   val ll = new LogisticLayer(w * h, 100)
   val nn = new FeedForwardNetwork(List(ll, new SoftmaxLayer(100, 10)))
 
-  nn.restore(new DataInputStream(new FileInputStream("/home/alno/nn-simple.dat")))
+  nn.restore(new DataInputStream(new FileInputStream("/home/alno/nn-simple-wd.dat")))
 
   def drawPlots(g2d: Graphics2D) {
     val plotWidth = 100
@@ -31,7 +31,7 @@ object NetworkVisualizer extends App {
   }
 
   ExportGraphics.writeFile(
-    new java.io.File("/home/alno/image.png"),
+    new java.io.File("/home/alno/image-wd.png"),
     draw = drawPlots,
     width = 1000,
     height = 1000)

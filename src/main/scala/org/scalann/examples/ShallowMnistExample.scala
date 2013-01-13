@@ -23,21 +23,32 @@ object ShallowMnistExample extends App {
   val trainExamples = examples.take(5000)
   val testExamples = examples.drop(trainExamples.size).take(10000)
 
+  val learningRate = 0.5
+  val weightDecay = 0.05
+  val momentumMult = 0.7
+
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 100), new SoftmaxLayer(100, 10)))
 
   val momentum = nn.examplesGradient(trainExamples)
   momentum *= 0.0 // TODO Implement zeroGradient
 
   for (iter <- 1 to 100) {
-    val grad = nn.examplesGradient(trainExamples)
-    grad *= -0.5
+    val wd = nn.paramsDecay :* nn.params
+    wd *= -weightDecay
 
-    momentum *= 0.7
+    val exLoss = nn.examplesLoss(trainExamples)
+    val wdLoss = 0.5 * weightDecay * wd.dot(wd)
+
+    println(iter + ": " + (exLoss + wdLoss) + ", " + exLoss + " + " + wdLoss)
+
+    val grad = nn.examplesGradient(trainExamples)
+    grad *= -learningRate
+
+    momentum *= momentumMult
     momentum += grad
+    momentum += wd
 
     nn.updateParams(momentum)
-
-    println(nn.examplesLoss(trainExamples))
   }
 
   println("Training loss: " + nn.examplesLoss(trainExamples))
@@ -49,7 +60,7 @@ object ShallowMnistExample extends App {
 
   println("Test error rate: " + testErrorRate)
 
-  nn.save(new DataOutputStream(new FileOutputStream("/home/alno/nn-simple.dat")))
+  nn.save(new DataOutputStream(new FileOutputStream("/home/alno/nn-simple-wd.dat")))
 
   println("Params saved")
 

@@ -54,6 +54,9 @@ class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
   def params =
     DenseVector.vertcat(layers.view.map(_.params): _*)
 
+  def paramsDecay =
+    DenseVector.vertcat(layers.view.map(_.paramsDecay): _*)
+
   def updateParams(gradient: DenseVector[Double]) =
     layers.foldLeft(0) { (pos, layer) =>
       layer.updateParams(gradient(pos until (pos + layer.paramSize)))

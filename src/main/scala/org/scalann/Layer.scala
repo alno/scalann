@@ -28,7 +28,15 @@ abstract class Stage {
   def outputSize: Int
   def paramSize: Int
 
+  /**
+   * Stage params as single vector
+   */
   def params: DenseVector[Double]
+
+  /**
+   * Coefficients for param decay - used to turn off decay of some parameters (such as biases)
+   */
+  def paramsDecay: DenseVector[Double]
 
   def apply(input: DenseVector[Double]): DenseVector[Double] =
     forward(input)._1

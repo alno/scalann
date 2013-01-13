@@ -15,6 +15,9 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
   val weights: DenseMatrix[Double] = new DenseMatrix(outputSize, inputSize, params.data)
   val biases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize, 1, outputSize)
 
+  val paramsDecay =
+    DenseVector.vertcat(DenseVector.fill(outputSize * inputSize)(1.0), DenseVector.fill(outputSize)(0.0))
+
   def forward(input: DenseVector[Double]) = {
     val result = weights * input
 
