@@ -9,8 +9,8 @@ import java.awt.Graphics2D
 object NetworkVisualizer extends App {
 
   val w, h = 28
-  val ll = new LogisticLayer(w * h, 100)
-  val nn = new FeedForwardNetwork(List(ll, new SoftmaxLayer(100, 10)))
+  val ll = new LogisticLayer(w * h, 50)
+  val nn = new FeedForwardNetwork(List(ll, new SoftmaxLayer(50, 10)))
 
   nn.restore(new DataInputStream(new FileInputStream("/home/alno/nn-simple-wd.dat")))
 

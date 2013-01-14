@@ -14,7 +14,7 @@ object ShallowRbmExample extends App {
     DenseVector.tabulate(w * h) { i => image(i / w, i % w) / 255.0 }
   }
 
-  val trainImages = images.take(1000)
+  val trainImages = images.take(5000)
 
   val learningRate = 0.5
   val weightDecay = 0.05
@@ -24,7 +24,7 @@ object ShallowRbmExample extends App {
 
   val momentum = DenseVector.zeros[Double](rbm.paramSize)
 
-  for (iter <- 1 to 500) {
+  for (iter <- 1 to 5000) {
     println(iter)
 
     val grad = rbm.gradient(trainImages)
