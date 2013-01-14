@@ -4,6 +4,7 @@ import breeze.linalg._
 import breeze.numerics._
 import Utils._
 import org.netlib.blas.Dgemm
+import org.netlib.blas.Dgemv
 
 class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVector[Double]] {
   val paramSize = outputSize * inputSize
@@ -23,29 +24,48 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVect
     if (paramGradAcc == null)
       return
 
-    val visibleData0 = sample(example)
+    val visible = example.copy
+    val hidden = DenseVector.zeros[Double](outputSize)
 
-    val hiddenData0 = weights * visibleData0
-    sigmoid.inPlace(hiddenData0)
-    sample.inPlace(hiddenData0)
+    sample.inPlace(visible)
 
-    val visibleData1 = weightsT * hiddenData0
-    sigmoid.inPlace(visibleData1)
-    sample.inPlace(visibleData1)
+    // hidden = weights * visible
+    Dgemv.dgemv("n", outputSize, inputSize,
+      1.0, weights.data, weights.offset, weights.majorStride,
+      visible.data, visible.offset, 1,
+      0.0, hidden.data, hidden.offset, 1)
 
-    val hiddenProb1 = weights * visibleData1
-    sigmoid.inPlace(hiddenProb1)
+    sigmoid.inPlace(hidden)
+    sample.inPlace(hidden)
 
-    // paramGradAcc += hiddenData0 * visibleData0.t * factor
+    // paramGradAcc += hidden * visible.t * factor
     Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
-      factor, hiddenData0.data, hiddenData0.offset, outputSize,
-      visibleData0.data, visibleData0.offset, inputSize,
+      factor, hidden.data, hidden.offset, outputSize,
+      visible.data, visible.offset, inputSize,
       1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
+
+    // visible = weights.t * hidden
+    Dgemv.dgemv("t", outputSize, inputSize,
+      1.0, weights.data, weights.offset, weights.majorStride,
+      hidden.data, hidden.offset, 1,
+      0.0, visible.data, visible.offset, 1)
+
+    sigmoid.inPlace(visible)
+    sample.inPlace(visible)
+
+    // hidden = weights * visible
+    Dgemv.dgemv("n", outputSize, inputSize,
+      1.0, weights.data, weights.offset, weights.majorStride,
+      visible.data, visible.offset, 1,
+      0.0, hidden.data, hidden.offset, 1)
+
+    sigmoid.inPlace(hidden)
+    sample.inPlace(hidden)
 
     // paramGradAcc -= hiddenProb1 * visibleData1.t * factor
     Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
-      -factor, hiddenProb1.data, hiddenProb1.offset, outputSize,
-      visibleData1.data, visibleData1.offset, inputSize,
+      -factor, hidden.data, hidden.offset, outputSize,
+      visible.data, visible.offset, inputSize,
       1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
   }
 
