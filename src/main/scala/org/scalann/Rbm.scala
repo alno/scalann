@@ -5,7 +5,7 @@ import breeze.numerics._
 import Utils._
 import org.netlib.blas.Dgemm
 
-class Rbm(val inputSize: Int, val outputSize: Int) extends Parametrized {
+class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVector[Double]] {
   val paramSize = outputSize * inputSize
 
   val params = DenseVector.fill(paramSize) { math.random * 2 - 1 }
@@ -47,21 +47,6 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Parametrized {
       -factor, hiddenProb1.data, hiddenProb1.offset, outputSize,
       visibleData1.data, visibleData1.offset, inputSize,
       1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
-  }
-
-  def gradient(example: DenseVector[Double]): DenseVector[Double] = {
-    val res = DenseVector.zeros[Double](paramSize)
-    gradientAdd(example)(res, 1.0)
-    res
-  }
-
-  def gradientAdd(examples: Traversable[DenseVector[Double]])(paramGradAcc: DenseVector[Double], factor: Double): Unit =
-    examples.foreach { gradientAdd(_)(paramGradAcc, factor / examples.size) }
-
-  def gradient(examples: Traversable[DenseVector[Double]]): DenseVector[Double] = {
-    val res = DenseVector.zeros[Double](paramSize)
-    gradientAdd(examples)(res, 1.0)
-    res
   }
 
 }

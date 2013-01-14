@@ -2,7 +2,7 @@ package org.scalann
 
 import breeze.linalg._
 
-abstract class Stage extends Parametrized {
+abstract class Stage extends Optimizable[(DenseVector[Double], DenseVector[Double])] {
 
   trait Memo {
 
@@ -29,12 +29,6 @@ abstract class Stage extends Parametrized {
 
   def inputSize: Int
   def outputSize: Int
-  def paramSize: Int
-
-  /**
-   * Stage params as single vector
-   */
-  def params: DenseVector[Double]
 
   /**
    * Coefficients for param decay - used to turn off decay of some parameters (such as biases)
@@ -45,25 +39,6 @@ abstract class Stage extends Parametrized {
     forward(input)._1
 
   def forward(input: DenseVector[Double]): (DenseVector[Double], Memo)
-
-  def updateParams(grad: DenseVector[Double])
-
-  def assignParams(grad: DenseVector[Double])
-
-  def gradientAdd(examples: Traversable[(DenseVector[Double], DenseVector[Double])])(paramGradAcc: DenseVector[Double], factor: Double): Unit =
-    examples.foreach { gradientAdd(_)(paramGradAcc, factor / examples.size) }
-
-  def gradient(examples: Traversable[(DenseVector[Double], DenseVector[Double])]): DenseVector[Double] = {
-    val res = DenseVector.zeros[Double](paramSize)
-    gradientAdd(examples)(res, 1.0)
-    res
-  }
-
-  def gradient(example: (DenseVector[Double], DenseVector[Double])) = {
-    val grad = DenseVector.zeros[Double](paramSize)
-    gradientAdd(example)(grad, 1.0)
-    grad
-  }
 
   def gradientAdd(example: (DenseVector[Double], DenseVector[Double]))(paramGradientAcc: DenseVector[Double], factor: Double) = {
     val (res, memo) = forward(example._1)
