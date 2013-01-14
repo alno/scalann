@@ -21,6 +21,9 @@ class LearningBench extends SimpleBenchmark {
   val example = examples.head
   val multiExamples = examples.take(100).toList
 
+  val input = example._1
+  val multiInputs = examples.map(_._1)
+
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
   val l = new LogisticLayer(w * h, 10)
   val rbm = new Rbm(w * h, 10)
@@ -71,7 +74,12 @@ class LearningBench extends SimpleBenchmark {
 
   def timeRbmGradient(reps: Int) {
     for (i <- 1 to reps)
-      rbm.gradient(example._1)
+      rbm.gradient(input)
+  }
+
+  def timeRbmMultipleExamplesGradient(reps: Int) {
+    for (i <- 1 to reps)
+      rbm.gradient(multiInputs)
   }
 
 }
