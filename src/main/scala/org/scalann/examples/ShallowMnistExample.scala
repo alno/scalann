@@ -5,7 +5,78 @@ import breeze.linalg._
 import java.io.DataOutputStream
 import java.io.FileOutputStream
 
-object ShallowMnistExample extends App {
+trait TrainingAlg {
+
+  import Utils._
+
+  def learningRate: Double
+  def weightDecay: Double
+  def momentumMult: Double
+
+  def train(stage: Stage)(examples: List[(DenseVector[Double], DenseVector[Double])]) {
+    val momentum = DenseVector.zeros[Double](stage.paramSize)
+
+    for (iter <- 1 to 200) {
+      val wd = stage.paramsDecay :* stage.params
+      wd *= -weightDecay
+
+      if (iter % 5 == 0) {
+        val exLoss = stage.examplesLoss(examples)
+        val wdLoss = 0.5 * weightDecay * wd.dot(wd)
+
+        println(iter + ": " + (exLoss + wdLoss) + ", " + exLoss + " + " + wdLoss)
+      }
+
+      momentum *= momentumMult
+      stage.gradientAdd(examples)(momentum, -learningRate)
+      momentum += wd
+
+      stage.updateParams(momentum)
+    }
+  }
+
+  def pretrainNetwork(nn: FeedForwardNetwork)(examples: List[(DenseVector[Double], DenseVector[Double])]) {
+    var currentPretrainInputs = examples.map(_._1)
+
+    for (l <- 0 until nn.layers.size - 1) {
+      println("Pretraining layer " + l)
+
+      val layer = nn.layers(l).asInstanceOf[LogisticLayer]
+      val rbm = new Rbm(layer.inputSize, layer.outputSize)
+      val momentum = DenseVector.zeros[Double](rbm.paramSize)
+
+      // Pretrain layer
+      for (iter <- 1 to 100) {
+        println(iter)
+
+        momentum *= momentumMult
+        rbm.gradientAdd(currentPretrainInputs)(momentum, learningRate)
+        rbm.updateParams(momentum)
+      }
+
+      if (l == 0)
+        rbm.save(new DataOutputStream(new FileOutputStream("/home/alno/nn-rbm.dat")))
+
+      // Assign pretrained layer weights
+      layer.weights := rbm.weights
+
+      println("Processing pretrain inputs...")
+      currentPretrainInputs = currentPretrainInputs.map(layer)
+    }
+
+    val lastPretrainExamples = currentPretrainInputs zip examples.view.map(_._2)
+    val lastLayer = nn.layers.last
+
+    println("Pretraining output layer")
+    train(lastLayer)(lastPretrainExamples)
+    println("Pretraining complete")
+  }
+
+}
+
+object ShallowMnistExample extends App with TrainingAlg {
+
+  import Utils._
 
   val w = MnistReader.imagesReader.width
   val h = MnistReader.imagesReader.height
@@ -20,8 +91,8 @@ object ShallowMnistExample extends App {
       input -> output
   }
 
-  val trainExamples = examples.take(5000)
-  val testExamples = examples.drop(trainExamples.size).take(10000)
+  val trainExamples = examples.take(7000).toList
+  val testExamples = examples.drop(trainExamples.size).take(10000).toList
 
   val learningRate = 0.5
   val weightDecay = 0.005
@@ -29,28 +100,8 @@ object ShallowMnistExample extends App {
 
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 50), new SoftmaxLayer(50, 10)))
 
-  val momentum = DenseVector.zeros[Double](nn.paramSize)
-
-  for (iter <- 1 to 200) {
-    val wd = nn.paramsDecay :* nn.params
-    wd *= -weightDecay
-
-    if (iter % 5 == 0) {
-      val exLoss = nn.examplesLoss(trainExamples)
-      val wdLoss = 0.5 * weightDecay * wd.dot(wd)
-
-      println(iter + ": " + (exLoss + wdLoss) + ", " + exLoss + " + " + wdLoss)
-    }
-
-    val grad = nn.gradient(trainExamples)
-    grad *= -learningRate
-
-    momentum *= momentumMult
-    momentum += grad
-    momentum += wd
-
-    nn.updateParams(momentum)
-  }
+  pretrainNetwork(nn)(trainExamples)
+  train(nn)(trainExamples)
 
   println("Training loss: " + nn.examplesLoss(trainExamples))
   println("Test loss: " + nn.examplesLoss(testExamples))
