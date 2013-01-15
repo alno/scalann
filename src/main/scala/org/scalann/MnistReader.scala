@@ -1,8 +1,7 @@
 package org.scalann
 
-import java.io.FileInputStream
-import java.io.DataInputStream
-import breeze.linalg.DenseMatrix
+import java.io.{ FileInputStream, DataInputStream }
+import breeze.linalg._
 
 class MnistLabelsReader(fileName: String) {
 
@@ -55,5 +54,17 @@ object MnistReader {
 
   val imagesReader = new MnistImagesReader("/home/alno/mnist/train-images-idx3-ubyte")
   val labelsReader = new MnistLabelsReader("/home/alno/mnist/train-labels-idx1-ubyte")
+
+  val examples = (imagesReader.images zip labelsReader.labels).map {
+    case (image, label) =>
+      val w = imagesReader.width
+      val h = imagesReader.height
+      val input = DenseVector.tabulate(w * h) { i => image(i / w, i % w) / 255.0 }
+      val output = DenseVector.zeros[Double](10)
+
+      output(label) = 1.0
+
+      input -> output
+  }
 
 }
