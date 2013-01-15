@@ -2,7 +2,7 @@ package org.scalann
 
 import breeze.linalg._
 
-abstract class Stage extends Optimizable[(DenseVector[Double], DenseVector[Double])] {
+abstract class Stage extends Optimizable[(DenseVector[Double], DenseVector[Double])] with (DenseVector[Double] => DenseVector[Double]) {
 
   trait Memo {
 
