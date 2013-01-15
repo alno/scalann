@@ -7,6 +7,8 @@ import java.io.FileOutputStream
 
 object ShallowRbmExample extends App {
 
+  import Utils._
+
   val w = MnistReader.imagesReader.width
   val h = MnistReader.imagesReader.height
 
@@ -14,7 +16,7 @@ object ShallowRbmExample extends App {
     DenseVector.tabulate(w * h) { i => image(i / w, i % w) / 255.0 }
   }
 
-  val trainImages = images.take(5000)
+  val trainImages = images.take(1000)
 
   val learningRate = 0.5
   val weightDecay = 0.05
@@ -22,18 +24,15 @@ object ShallowRbmExample extends App {
 
   val rbm = new Rbm(w * h, 50)
 
-  val momentum = DenseVector.zeros[Double](rbm.paramSize)
+  val grad = DenseVector.zeros[Double](rbm.paramSize)
 
-  for (iter <- 1 to 5000) {
+  for (iter <- 1 to 100) {
     println(iter)
 
-    val grad = rbm.gradient(trainImages)
-    grad *= learningRate
+    zero.inPlace(grad)
 
-    momentum *= momentumMult
-    momentum += grad
-
-    rbm.updateParams(momentum)
+    rbm.gradientAdd(trainImages)(grad, learningRate)
+    rbm.updateParams(grad)
   }
 
   println("Completed")
