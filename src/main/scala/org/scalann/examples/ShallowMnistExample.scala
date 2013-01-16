@@ -38,7 +38,7 @@ object ShallowMnistExample extends App with TrainingAlg {
   println("Test loss: " + nn.examplesLoss(testExamples))
 
   val testErrorRate = testExamples.filter { ex =>
-    nn(ex._1).activeIterator.maxBy(_._2)._1 != ex._2.activeIterator.maxBy(_._2)._1
+    nn(ex._1).argmax != ex._2.argmax
   }.size * 1.0 / testExamples.size
 
   println("Test error rate: " + testErrorRate)
