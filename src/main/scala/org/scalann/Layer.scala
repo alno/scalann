@@ -30,11 +30,6 @@ abstract class Stage extends Optimizable[(DenseVector[Double], DenseVector[Doubl
   def inputSize: Int
   def outputSize: Int
 
-  /**
-   * Coefficients for param decay - used to turn off decay of some parameters (such as biases)
-   */
-  def paramsDecay: DenseVector[Double]
-
   def apply(input: DenseVector[Double]): DenseVector[Double] =
     forward(input)._1
 

@@ -15,6 +15,9 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
   val visibleBiases: DenseVector[Double] = new DenseVector(params.data, hiddenSize * visibleSize, 1, visibleSize)
   val hiddenBiases: DenseVector[Double] = new DenseVector(params.data, hiddenSize * visibleSize + visibleSize, 1, hiddenSize)
 
+  val paramsDecay =
+    DenseVector.vertcat(DenseVector.fill(hiddenSize * visibleSize)(1.0), DenseVector.fill(hiddenSize + visibleSize)(0.0))
+
   var cdLevel = 2
 
   def updateParams(gradient: DenseVector[Double]) =
