@@ -5,8 +5,8 @@ import breeze.numerics._
 import scala.math.exp
 
 import org.netlib.blas.Dgemv
-import org.netlib.blas.Dgemm
 import org.netlib.blas.Daxpy
+import org.netlib.blas.Dger
 
 abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
 
@@ -41,7 +41,7 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
           // inputGradAcc += weights.t * dEh * factor// Append derivation by inputs
           Dgemv.dgemv("t", outputSize, inputSize,
             inputFactor, weights.data, weights.offset, weights.majorStride,
-            dEh.data, dEh.offset, 1,
+            dEh.data, dEh.offset, dEh.stride,
             1.0, inputGradAcc.data, inputGradAcc.offset, inputGradAcc.stride)
         }
 
@@ -50,14 +50,14 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
           require(paramGradAcc.stride == 1)
 
           // paramGradAcc(dEw) += dEh * input.t * factor // Derivation by weights
-          Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
-            paramFactor, dEh.data, dEh.offset, outputSize,
-            input.data, input.offset, inputSize,
-            1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
+          Dger.dger(outputSize, inputSize, paramFactor,
+            dEh.data, dEh.offset, dEh.stride,
+            input.data, input.offset, input.stride,
+            paramGradAcc.data, paramGradAcc.offset, outputSize)
 
           // paramGradAcc(dEb) += dEh * factor // Derivation by biases
           Daxpy.daxpy(outputSize, paramFactor,
-            dEh.data, dEh.offset, 1,
+            dEh.data, dEh.offset, dEh.stride,
             paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1);
         }
       }

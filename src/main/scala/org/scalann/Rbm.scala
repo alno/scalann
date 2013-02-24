@@ -53,8 +53,8 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // hidden = weights * visible
     Dgemv.dgemv("n", hiddenSize, visibleSize,
       1.0, weights.data, weights.offset, weights.majorStride,
-      visible.data, visible.offset, 1,
-      0.0, hidden.data, hidden.offset, 1)
+      visible.data, visible.offset, visible.stride,
+      0.0, hidden.data, hidden.offset, hidden.stride)
 
     hidden += hiddenBiases
     sigmoid.inPlace(hidden)
@@ -69,12 +69,12 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
 
     // paramGradAcc(visibleBiases) += visible * factor
     Daxpy.daxpy(visibleSize, factor,
-      visible.data, visible.offset, 1,
+      visible.data, visible.offset, visible.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize, 1);
 
     // paramGradAcc(hiddenBiases) += hidden * factor
     Daxpy.daxpy(hiddenSize, factor,
-      hidden.data, hidden.offset, 1,
+      hidden.data, hidden.offset, hidden.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize + visibleSize, 1);
 
     // Iterating cdLevel times to generate reconstructions
@@ -91,12 +91,12 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
 
     // paramGradAcc(visibleBiases) -= visible * factor
     Daxpy.daxpy(visibleSize, -factor,
-      visible.data, visible.offset, 1,
+      visible.data, visible.offset, visible.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize, 1);
 
     // paramGradAcc(hiddenBiases) -= hidden * factor
     Daxpy.daxpy(hiddenSize, -factor,
-      hidden.data, hidden.offset, 1,
+      hidden.data, hidden.offset, hidden.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize + visibleSize, 1);
   }
 
@@ -107,8 +107,8 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // visible = weights.t * hidden
     Dgemv.dgemv("t", hiddenSize, visibleSize,
       1.0, weights.data, weights.offset, weights.majorStride,
-      hidden.data, hidden.offset, 1,
-      0.0, visible.data, visible.offset, 1)
+      hidden.data, hidden.offset, hidden.stride,
+      0.0, visible.data, visible.offset, visible.stride)
 
     visible += visibleBiases
     sigmoid.inPlace(visible)
@@ -116,8 +116,8 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // hidden = weights * visible
     Dgemv.dgemv("n", hiddenSize, visibleSize,
       1.0, weights.data, weights.offset, weights.majorStride,
-      visible.data, visible.offset, 1,
-      0.0, hidden.data, hidden.offset, 1)
+      visible.data, visible.offset, visible.stride,
+      0.0, hidden.data, hidden.offset, hidden.stride)
 
     hidden += hiddenBiases
     sigmoid.inPlace(hidden)
