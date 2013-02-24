@@ -3,9 +3,9 @@ package org.scalann
 import breeze.linalg._
 import breeze.numerics._
 import Utils._
-import org.netlib.blas.Dgemm
 import org.netlib.blas.Dgemv
 import org.netlib.blas.Daxpy
+import org.netlib.blas.Dger
 
 class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVector[Double]] {
   val paramSize = hiddenSize * visibleSize + visibleSize + hiddenSize
@@ -62,10 +62,10 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // Updating gradient with positive statistics
 
     // paramGradAcc(weights) += hidden * visible.t * factor
-    Dgemm.dgemm("n", "t", hiddenSize, visibleSize, 1,
-      factor, hidden.data, hidden.offset, hiddenSize,
-      visible.data, visible.offset, visibleSize,
-      1.0, paramGradAcc.data, paramGradAcc.offset, hiddenSize)
+    Dger.dger(hiddenSize, visibleSize, factor,
+      hidden.data, hidden.offset, hidden.stride,
+      visible.data, visible.offset, visible.stride,
+      paramGradAcc.data, paramGradAcc.offset, hiddenSize)
 
     // paramGradAcc(visibleBiases) += visible * factor
     Daxpy.daxpy(visibleSize, factor,
@@ -84,10 +84,10 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // Updating gradient with negative statistics
 
     // paramGradAcc -= hiddenProb1 * visibleData1.t * factor
-    Dgemm.dgemm("n", "t", hiddenSize, visibleSize, 1,
-      -factor, hidden.data, hidden.offset, hiddenSize,
-      visible.data, visible.offset, visibleSize,
-      1.0, paramGradAcc.data, paramGradAcc.offset, hiddenSize)
+    Dger.dger(hiddenSize, visibleSize, -factor,
+      hidden.data, hidden.offset, hidden.stride,
+      visible.data, visible.offset, visible.stride,
+      paramGradAcc.data, paramGradAcc.offset, hiddenSize)
 
     // paramGradAcc(visibleBiases) -= visible * factor
     Daxpy.daxpy(visibleSize, -factor,
