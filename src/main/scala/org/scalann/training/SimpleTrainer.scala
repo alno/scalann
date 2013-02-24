@@ -1,29 +1,25 @@
 package org.scalann.training
 
 import org.scalann._
+import org.scalann.decay.Decay
 import breeze.linalg._
 
-class SimpleTrainer(val learningRate: Double, val weightDecay: Double, val momentumMultiplier: Double) {
+class SimpleTrainer(val learningRate: Double, val momentumMultiplier: Double, val decay: Decay, val decayCoeff: Double, val maxIter: Int) {
 
-  def train(stage: Stage)(examples: List[(DenseVector[Double], DenseVector[Double])]) {
-    val momentum = DenseVector.zeros[Double](stage.paramSize)
+  def train[T](target: Optimizable[T])(examples: => Traversable[T])(callback: (Int) => Unit = { _ => }) {
+    val momentum = DenseVector.zeros[Double](target.paramSize)
 
-    for (iter <- 1 to 200) {
-      val wd = stage.paramsDecay :* stage.params
-      wd *= -weightDecay
-
-      if (iter % 5 == 0) {
-        val exLoss = stage.examplesLoss(examples)
-        val wdLoss = 0.5 * weightDecay * wd.dot(wd)
-
-        println(iter + ": " + (exLoss + wdLoss) + ", " + exLoss + " + " + wdLoss)
-      }
-
+    for (iter <- 1 to maxIter) {
       momentum *= momentumMultiplier
-      momentum += wd
 
-      stage.gradientAdd(examples)(momentum, -learningRate) // Add gradient
-      stage.updateParams(momentum)
+      // Add weight decay
+      decay.gradientAdd(target.params, target.paramsDecay)(momentum, learningRate * decayCoeff)
+
+      // Add calculated gradient and update params
+      target.gradientAdd(examples)(momentum, learningRate)
+      target.updateParams(momentum)
+
+      callback(iter)
     }
   }
 

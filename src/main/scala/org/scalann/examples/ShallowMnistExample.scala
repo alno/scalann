@@ -1,6 +1,7 @@
 package org.scalann.examples
 
 import org.scalann._
+import org.scalann.decay._
 import breeze.linalg._
 import java.io.DataOutputStream
 import java.io.FileOutputStream
@@ -32,7 +33,7 @@ object ShallowMnistExample extends App with TrainingAlg {
 
   val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 50), new SoftmaxLayer(50, 10)))
 
-  new NetworkTrainer(learningRate, weightDecay, momentumMult).train(nn)(trainExamples)
+  new NetworkTrainer(learningRate, momentumMult, L2Decay, weightDecay, 100).train(nn)(trainExamples)
 
   println("Training loss: " + nn.examplesLoss(trainExamples))
   println("Test loss: " + nn.examplesLoss(testExamples))
