@@ -16,7 +16,7 @@ class RbmSpec extends BaseSpec {
       val gradient = rbm.gradient(input)
 
       it("should have correct size") {
-        gradient.size should be(6)
+        gradient.size should be(11)
       }
 
     }
