@@ -23,4 +23,16 @@ object Utils {
     randomState
   }
 
+  implicit class IndexedSeqExt[T](val seq: IndexedSeq[T]) extends AnyVal {
+
+    def sample(count: Int): Seq[T] = {
+      val rand = new java.util.Random
+
+      List.fill(count) {
+        seq(rand.nextInt(seq.size))
+      }
+    }
+
+  }
+
 }
