@@ -7,17 +7,15 @@ import org.netlib.blas.Dgemm
 import org.netlib.blas.Dgemv
 import org.netlib.blas.Daxpy
 
-class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVector[Double]] {
-  val paramSize = outputSize * inputSize + inputSize + outputSize
+class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVector[Double]] {
+  val paramSize = hiddenSize * visibleSize + visibleSize + hiddenSize
 
   val params = DenseVector.fill(paramSize) { math.random * 2 - 1 }
-  val weights: DenseMatrix[Double] = new DenseMatrix(outputSize, inputSize, params.data)
-  val visibleBiases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize, 1, inputSize)
-  val hiddenBiases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize + inputSize, 1, outputSize)
+  val weights: DenseMatrix[Double] = new DenseMatrix(hiddenSize, visibleSize, params.data)
+  val visibleBiases: DenseVector[Double] = new DenseVector(params.data, hiddenSize * visibleSize, 1, visibleSize)
+  val hiddenBiases: DenseVector[Double] = new DenseVector(params.data, hiddenSize * visibleSize + visibleSize, 1, hiddenSize)
 
   var cdLevel = 1
-
-  private val weightsT: DenseMatrix[Double] = weights.t
 
   def updateParams(gradient: DenseVector[Double]) =
     params += gradient
@@ -34,10 +32,10 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVect
       return
 
     val visible = example.copy
-    val hidden = DenseVector.zeros[Double](outputSize)
+    val hidden = DenseVector.zeros[Double](hiddenSize)
 
     // hidden = weights * visible
-    Dgemv.dgemv("n", outputSize, inputSize,
+    Dgemv.dgemv("n", hiddenSize, visibleSize,
       1.0, weights.data, weights.offset, weights.majorStride,
       visible.data, visible.offset, 1,
       0.0, hidden.data, hidden.offset, 1)
@@ -48,20 +46,20 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVect
     // Updating gradient with positive statistics
 
     // paramGradAcc(weights) += hidden * visible.t * factor
-    Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
-      factor, hidden.data, hidden.offset, outputSize,
-      visible.data, visible.offset, inputSize,
-      1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
+    Dgemm.dgemm("n", "t", hiddenSize, visibleSize, 1,
+      factor, hidden.data, hidden.offset, hiddenSize,
+      visible.data, visible.offset, visibleSize,
+      1.0, paramGradAcc.data, paramGradAcc.offset, hiddenSize)
 
     // paramGradAcc(visibleBiases) += visible * factor
-    Daxpy.daxpy(inputSize, factor,
+    Daxpy.daxpy(visibleSize, factor,
       visible.data, visible.offset, 1,
-      paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1);
+      paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize, 1);
 
     // paramGradAcc(hiddenBiases) += hidden * factor
-    Daxpy.daxpy(outputSize, factor,
+    Daxpy.daxpy(hiddenSize, factor,
       hidden.data, hidden.offset, 1,
-      paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize + inputSize, 1);
+      paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize + visibleSize, 1);
 
     // Iterating cdLevel times to generate reconstructions
     for (i <- 0 to cdLevel) {
@@ -69,7 +67,7 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVect
       sample.inPlace(hidden)
 
       // visible = weights.t * hidden
-      Dgemv.dgemv("t", outputSize, inputSize,
+      Dgemv.dgemv("t", hiddenSize, visibleSize,
         1.0, weights.data, weights.offset, weights.majorStride,
         hidden.data, hidden.offset, 1,
         0.0, visible.data, visible.offset, 1)
@@ -78,7 +76,7 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVect
       sigmoid.inPlace(visible)
 
       // hidden = weights * visible
-      Dgemv.dgemv("n", outputSize, inputSize,
+      Dgemv.dgemv("n", hiddenSize, visibleSize,
         1.0, weights.data, weights.offset, weights.majorStride,
         visible.data, visible.offset, 1,
         0.0, hidden.data, hidden.offset, 1)
@@ -90,20 +88,20 @@ class Rbm(val inputSize: Int, val outputSize: Int) extends Optimizable[DenseVect
     // Updating gradient with negative statistics
 
     // paramGradAcc -= hiddenProb1 * visibleData1.t * factor
-    Dgemm.dgemm("n", "t", outputSize, inputSize, 1,
-      -factor, hidden.data, hidden.offset, outputSize,
-      visible.data, visible.offset, inputSize,
-      1.0, paramGradAcc.data, paramGradAcc.offset, outputSize)
+    Dgemm.dgemm("n", "t", hiddenSize, visibleSize, 1,
+      -factor, hidden.data, hidden.offset, hiddenSize,
+      visible.data, visible.offset, visibleSize,
+      1.0, paramGradAcc.data, paramGradAcc.offset, hiddenSize)
 
     // paramGradAcc(visibleBiases) -= visible * factor
-    Daxpy.daxpy(inputSize, -factor,
+    Daxpy.daxpy(visibleSize, -factor,
       visible.data, visible.offset, 1,
-      paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize, 1);
+      paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize, 1);
 
     // paramGradAcc(hiddenBiases) -= hidden * factor
-    Daxpy.daxpy(outputSize, -factor,
+    Daxpy.daxpy(hiddenSize, -factor,
       hidden.data, hidden.offset, 1,
-      paramGradAcc.data, paramGradAcc.offset + outputSize * inputSize + inputSize, 1);
+      paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize + visibleSize, 1);
   }
 
 }
