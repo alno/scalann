@@ -19,9 +19,9 @@ object MnistClassifierExample extends App {
     momentumMultiplier = 0.8,
     decay = L2Decay,
     decayCoeff = 0.005,
-    maxIter = 1000)
+    maxIter = 2000)
 
-  val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 50), new SoftmaxLayer(50, 10)))
+  val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 25), new SoftmaxLayer(25, 10)))
 
   trainer.train(nn) { trainExamples } { iter =>
     if (iter % 10 == 0) {

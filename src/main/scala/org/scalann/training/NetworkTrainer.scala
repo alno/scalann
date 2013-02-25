@@ -26,8 +26,9 @@ class NetworkTrainer(val learningRate: Double, val momentumMultiplier: Double, v
       // Train rbm
       rbmTrainer.train(rbm)(currentPretrainInputs)()
 
-      // Assign pretrained layer weights
+      // Assign pretrained layer weights and biases
       layer.weights := rbm.weights
+      layer.biases := rbm.hiddenBiases
 
       println("Processing pretrain inputs...")
       currentPretrainInputs = currentPretrainInputs.map(layer)
