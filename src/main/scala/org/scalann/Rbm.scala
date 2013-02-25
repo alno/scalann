@@ -62,18 +62,18 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // Updating gradient with positive statistics
 
     // paramGradAcc(weights) += hidden * visible.t * factor
-    Dger.dger(hiddenSize, visibleSize, factor,
+    Dger.dger(hiddenSize, visibleSize, -factor,
       hidden.data, hidden.offset, hidden.stride,
       visible.data, visible.offset, visible.stride,
       paramGradAcc.data, paramGradAcc.offset, hiddenSize)
 
     // paramGradAcc(visibleBiases) += visible * factor
-    Daxpy.daxpy(visibleSize, factor,
+    Daxpy.daxpy(visibleSize, -factor,
       visible.data, visible.offset, visible.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize, 1);
 
     // paramGradAcc(hiddenBiases) += hidden * factor
-    Daxpy.daxpy(hiddenSize, factor,
+    Daxpy.daxpy(hiddenSize, -factor,
       hidden.data, hidden.offset, hidden.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize + visibleSize, 1);
 
@@ -84,18 +84,18 @@ class Rbm(val visibleSize: Int, val hiddenSize: Int) extends Optimizable[DenseVe
     // Updating gradient with negative statistics
 
     // paramGradAcc -= hiddenProb1 * visibleData1.t * factor
-    Dger.dger(hiddenSize, visibleSize, -factor,
+    Dger.dger(hiddenSize, visibleSize, factor,
       hidden.data, hidden.offset, hidden.stride,
       visible.data, visible.offset, visible.stride,
       paramGradAcc.data, paramGradAcc.offset, hiddenSize)
 
     // paramGradAcc(visibleBiases) -= visible * factor
-    Daxpy.daxpy(visibleSize, -factor,
+    Daxpy.daxpy(visibleSize, factor,
       visible.data, visible.offset, visible.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize, 1);
 
     // paramGradAcc(hiddenBiases) -= hidden * factor
-    Daxpy.daxpy(hiddenSize, -factor,
+    Daxpy.daxpy(hiddenSize, factor,
       hidden.data, hidden.offset, hidden.stride,
       paramGradAcc.data, paramGradAcc.offset + hiddenSize * visibleSize + visibleSize, 1);
   }

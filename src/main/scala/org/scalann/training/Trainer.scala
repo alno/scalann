@@ -16,7 +16,7 @@ class Trainer(val learningRate: Double, val momentumMultiplier: Double, val deca
       decay.gradientAdd(target.params, target.paramsDecay)(momentum, learningRate * decayCoeff)
 
       // Add calculated gradient and update params
-      target.gradientAdd(examples)(momentum, learningRate)
+      target.gradientAdd(examples)(momentum, -learningRate)
       target.updateParams(momentum)
 
       callback(iter)
