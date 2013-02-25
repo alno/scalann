@@ -6,8 +6,8 @@ import breeze.linalg._
 
 class NetworkTrainer(val learningRate: Double, val momentumMultiplier: Double, val decay: Decay, val decayCoeff: Double, val maxIter: Int) {
 
-  private val stageTrainer = new SimpleTrainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
-  private val rbmTrainer = new SimpleTrainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
+  private val stageTrainer = new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
+  private val rbmTrainer = new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
 
   def train(nn: SequentalNetwork)(examples: Seq[(DenseVector[Double], DenseVector[Double])])(callback: (Int) => Unit = { _ => }) {
     pretrainNetwork(nn)(examples)

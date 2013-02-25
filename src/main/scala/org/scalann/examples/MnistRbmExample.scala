@@ -7,15 +7,13 @@ import org.scalann.training._
 import org.scalann.visualization._
 import java.io.{ DataOutputStream, FileOutputStream }
 
-object ShallowRbmExample extends App {
+object MnistRbmExample extends App {
 
-  require(args.size == 1, "should have MNIST location as argument")
-
-  val mnist = new Mnist(args(0))
+  val mnist = new Mnist(System.getenv("MNIST_PATH"))
 
   val trainImages = mnist.imagesAsVectors.take(1000).toVector
 
-  val trainer = new SimpleTrainer(
+  val trainer = new Trainer(
     learningRate = 0.2,
     momentumMultiplier = 0.5,
     decay = L2Decay,

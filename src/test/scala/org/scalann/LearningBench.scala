@@ -6,7 +6,7 @@ import org.scalann.examples.Mnist
 
 class LearningBench extends SimpleBenchmark {
 
-  val mnist = new Mnist("/home/alno/mnist")
+  val mnist = new Mnist(System.getenv("MNIST_PATH"))
   val examples = mnist.examples
 
   val example = examples.head

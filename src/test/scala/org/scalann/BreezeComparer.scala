@@ -8,7 +8,7 @@ import org.scalann.examples.Mnist
 
 object BreezeComparer extends App {
 
-  val mnist = new Mnist(args(0))
+  val mnist = new Mnist(System.getenv("MNIST_PATH"))
 
   val breezeExamples = (mnist.imagesAsMatrices zip mnist.labelsAsInts).map {
     case (image, label) =>

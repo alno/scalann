@@ -4,7 +4,7 @@ import org.scalann._
 import org.scalann.decay.Decay
 import breeze.linalg._
 
-class SimpleTrainer(val learningRate: Double, val momentumMultiplier: Double, val decay: Decay, val decayCoeff: Double, val maxIter: Int) {
+class Trainer(val learningRate: Double, val momentumMultiplier: Double, val decay: Decay, val decayCoeff: Double, val maxIter: Int) {
 
   def train[T](target: Optimizable[T])(examples: => Traversable[T])(callback: (Int) => Unit = { _ => }) {
     val momentum = DenseVector.zeros[Double](target.paramSize)

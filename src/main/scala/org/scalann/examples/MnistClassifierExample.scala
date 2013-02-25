@@ -7,11 +7,9 @@ import org.scalann.training._
 import org.scalann.visualization._
 import java.io.{ DataOutputStream, FileOutputStream }
 
-object ShallowMnistExample extends App {
+object MnistClassifierExample extends App {
 
-  require(args.size == 1, "should have MNIST location as argument")
-
-  val mnist = new Mnist(args(0))
+  val mnist = new Mnist(System.getenv("MNIST_PATH"))
 
   val trainExamples = mnist.examples.take(7000).toVector
   val testExamples = mnist.examples.drop(trainExamples.size).take(10000).toVector
