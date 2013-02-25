@@ -3,7 +3,7 @@ package org.scalann
 import breeze.linalg._
 import scala.annotation.tailrec
 
-class FeedForwardNetwork(val layers: List[Stage]) extends Stage {
+class SequentalNetwork(val layers: List[Stage]) extends Stage {
 
   validateLayers(layers.head, layers.tail)
 

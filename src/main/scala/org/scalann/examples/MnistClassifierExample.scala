@@ -23,7 +23,7 @@ object ShallowMnistExample extends App {
     decayCoeff = 0.005,
     maxIter = 1000)
 
-  val nn = new FeedForwardNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 50), new SoftmaxLayer(50, 10)))
+  val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 50), new SoftmaxLayer(50, 10)))
 
   trainer.train(nn) { trainExamples } { iter =>
     if (iter % 10 == 0) {

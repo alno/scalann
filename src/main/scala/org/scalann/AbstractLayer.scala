@@ -8,7 +8,7 @@ import org.netlib.blas.Dgemv
 import org.netlib.blas.Daxpy
 import org.netlib.blas.Dger
 
-abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage {
+abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends Stage {
 
   val paramSize = outputSize * (inputSize + 1)
 
@@ -75,83 +75,4 @@ abstract class BasicLayer(val inputSize: Int, val outputSize: Int) extends Stage
 
   protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double])
 
-}
-
-class LinearLayer(inputSize: Int, outputSize: Int) extends BasicLayer(inputSize, outputSize) {
-
-  protected def outputTransform(v: DenseVector[Double]) {}
-
-  protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double]) {}
-
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double =
-    0.5 * (actual.activeValuesIterator zip target.activeValuesIterator).map {
-      case (a, b) => (a - b) * (a - b)
-    }.sum
-
-}
-
-class LogisticLayer(inputSize: Int, outputSize: Int) extends BasicLayer(inputSize, outputSize) {
-
-  private[this] val tiny = 1e-300
-
-  protected def outputTransform(v: DenseVector[Double]) =
-    sigmoid.inPlace(v)
-
-  protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double]) {
-    val ddata = dv.data
-    val dstride = dv.stride
-
-    val vdata = v.data
-    val vstride = v.stride
-
-    var dpos = dv.offset
-    var vpos = v.offset
-    var ind = 0
-
-    while (ind < dv.size) {
-      ddata(dpos) *= vdata(vpos) * (1 - vdata(vpos))
-      dpos += dstride
-      vpos += vstride
-      ind += 1
-    }
-  }
-
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double =
-    -(actual.activeValuesIterator zip target.activeValuesIterator).map {
-      case (a, b) => math.log(a + tiny) * b + math.log(1 - a + tiny) * (1 - b)
-    }.sum
-
-}
-
-class SoftmaxLayer(inputSize: Int, outputSize: Int) extends BasicLayer(inputSize, outputSize) {
-
-  private[this] val tiny = 1e-300
-
-  protected def outputTransform(v: DenseVector[Double]) = {
-    val data = v.data
-    val stride = v.stride
-    val max = v.max
-
-    var pos = v.offset
-    var ind = 0
-    var sum = 0.0
-
-    while (ind < v.size) {
-      val cur = exp(data(pos) - max)
-
-      data(pos) = cur
-      sum += cur
-      pos += stride
-      ind += 1
-    }
-
-    v /= sum
-  }
-
-  protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double]) {}
-
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double =
-    -(actual.activeValuesIterator zip target.activeValuesIterator).map {
-      case (a, b) => math.log(a + tiny) * b
-    }.sum
 }

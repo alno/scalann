@@ -11,9 +11,9 @@ class NetworkSpec extends BaseSpec {
   def zv(size: Int) = DenseVector.fill[Double](size)(math.random)
 
   val testLayerConfigs = Map(
-    new FeedForwardNetwork(List(new LogisticLayer(4, 3), new LogisticLayer(3, 2))) -> logisticTarget _,
-    new FeedForwardNetwork(List(new LogisticLayer(4, 3), new SoftmaxLayer(3, 2))) -> softmaxTarget _,
-    new FeedForwardNetwork(List(new LogisticLayer(4, 3), new LinearLayer(3, 2))) -> linearTarget _)
+    new SequentalNetwork(List(new LogisticLayer(4, 3), new LogisticLayer(3, 2))) -> logisticTarget _,
+    new SequentalNetwork(List(new LogisticLayer(4, 3), new SoftmaxLayer(3, 2))) -> softmaxTarget _,
+    new SequentalNetwork(List(new LogisticLayer(4, 3), new LinearLayer(3, 2))) -> linearTarget _)
 
   testLayerConfigs.foreach {
     case (net, targetFun) =>

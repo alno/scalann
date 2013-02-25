@@ -15,7 +15,7 @@ class LearningBench extends SimpleBenchmark {
   val input = example._1
   val multiInputs = examples.map(_._1)
 
-  val nn = new FeedForwardNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 200), new SoftmaxLayer(200, 10)))
+  val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 200), new SoftmaxLayer(200, 10)))
   val l = new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 10)
   val rbm = new Rbm(mnist.imageWidth * mnist.imageHeight, 10)
 
