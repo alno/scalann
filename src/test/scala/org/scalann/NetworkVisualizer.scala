@@ -1,5 +1,6 @@
 package org.scalann
 
+import org.scalann.utils._
 import breeze.linalg._
 import breeze.plot._
 import java.io.DataInputStream

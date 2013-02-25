@@ -1,9 +1,11 @@
 package org.scalann
 
+import breeze.linalg.DenseVector
 import breeze.generic.UFunc
 import scala.math._
+import java.io.{ DataInput, DataOutput }
 
-object Utils {
+package object utils {
 
   def sample = UFunc { (x: Double) =>
     if (x > fastRandomDouble) 1.0 else 0.0
@@ -38,6 +40,16 @@ object Utils {
         seq(rand.nextInt(seq.size))
       }
     }
+
+  }
+
+  implicit class ParametrizedIOExt(val stage: Parametrized) extends AnyVal {
+
+    def restore(in: DataInput): Unit =
+      stage.assignParams(DenseVector.fill(stage.paramSize) { in.readDouble })
+
+    def save(out: DataOutput): Unit =
+      stage.params.foreach(out.writeDouble)
 
   }
 

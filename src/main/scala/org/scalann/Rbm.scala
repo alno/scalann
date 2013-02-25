@@ -2,7 +2,7 @@ package org.scalann
 
 import breeze.linalg._
 import breeze.numerics._
-import Utils._
+import org.scalann.utils._
 import org.netlib.blas.Dgemv
 import org.netlib.blas.Daxpy
 import org.netlib.blas.Dger

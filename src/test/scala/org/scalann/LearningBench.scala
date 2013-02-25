@@ -2,21 +2,12 @@ package org.scalann
 
 import breeze.linalg._
 import com.google.caliper.SimpleBenchmark
+import org.scalann.examples.Mnist
 
 class LearningBench extends SimpleBenchmark {
 
-  val w = MnistReader.imagesReader.width
-  val h = MnistReader.imagesReader.height
-
-  val examples = (MnistReader.imagesReader.images zip MnistReader.labelsReader.labels).take(100).map {
-    case (image, label) =>
-      val input = DenseVector.tabulate(w * h) { i => image(i / w, i % w) / 255.0 }
-      val output = DenseVector.zeros[Double](10)
-
-      output(label) = 1.0
-
-      input -> output
-  }
+  val mnist = new Mnist("/home/alno/mnist")
+  val examples = mnist.examples
 
   val example = examples.head
   val multiExamples = examples.take(100).toList
@@ -24,9 +15,9 @@ class LearningBench extends SimpleBenchmark {
   val input = example._1
   val multiInputs = examples.map(_._1)
 
-  val nn = new FeedForwardNetwork(List(new LogisticLayer(w * h, 200), new SoftmaxLayer(200, 10)))
-  val l = new LogisticLayer(w * h, 10)
-  val rbm = new Rbm(w * h, 10)
+  val nn = new FeedForwardNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 200), new SoftmaxLayer(200, 10)))
+  val l = new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 10)
+  val rbm = new Rbm(mnist.imageWidth * mnist.imageHeight, 10)
 
   override def setUp {
     examples.size

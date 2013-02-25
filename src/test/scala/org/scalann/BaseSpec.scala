@@ -1,5 +1,6 @@
 package org.scalann
 
+import org.scalann.utils._
 import org.scalatest.FunSpec
 import org.scalatest.matchers.ShouldMatchers
 import breeze.linalg._

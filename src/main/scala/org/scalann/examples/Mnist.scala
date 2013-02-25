@@ -1,9 +1,9 @@
-package org.scalann
+package org.scalann.examples
 
 import java.io.{ FileInputStream, DataInputStream }
 import breeze.linalg._
 
-class MnistLabelsReader(fileName: String) {
+class MnistLabelReader(fileName: String) {
 
   private[this] val stream = new DataInputStream(new FileInputStream(fileName))
 
@@ -11,7 +11,10 @@ class MnistLabelsReader(fileName: String) {
 
   val count = stream.readInt()
 
-  val labels = readLabels(0)
+  val labelsAsInts = readLabels(0)
+  val labelsAsVectors = labelsAsInts.map { label =>
+    DenseVector.tabulate[Double](10) { i => if (i == label) 1.0 else 0.0 }
+  }
 
   private[this] def readLabels(ind: Int): Stream[Int] =
     if (ind >= count)
@@ -21,7 +24,7 @@ class MnistLabelsReader(fileName: String) {
 
 }
 
-class MnistImagesReader(fileName: String) {
+class MnistImageReader(fileName: String) {
 
   private[this] val stream = new DataInputStream(new FileInputStream(fileName))
 
@@ -31,7 +34,10 @@ class MnistImagesReader(fileName: String) {
   val width = stream.readInt()
   val height = stream.readInt()
 
-  val images = readImages(0)
+  val imagesAsMatrices = readImages(0)
+  val imagesAsVectors = imagesAsMatrices map { image =>
+    DenseVector.tabulate(width * height) { i => image(i / width, i % height) / 255.0 }
+  }
 
   private[this] def readImages(ind: Int): Stream[DenseMatrix[Int]] =
     if (ind >= count)
@@ -50,21 +56,20 @@ class MnistImagesReader(fileName: String) {
 
 }
 
-object MnistReader {
+class Mnist(location: String) {
 
-  val imagesReader = new MnistImagesReader("/home/alno/mnist/train-images-idx3-ubyte")
-  val labelsReader = new MnistLabelsReader("/home/alno/mnist/train-labels-idx1-ubyte")
+  lazy val imageReader = new MnistImageReader(location + "/train-images-idx3-ubyte")
+  lazy val labelReader = new MnistLabelReader(location + "/train-labels-idx1-ubyte")
 
-  val examples = (imagesReader.images zip labelsReader.labels).map {
-    case (image, label) =>
-      val w = imagesReader.width
-      val h = imagesReader.height
-      val input = DenseVector.tabulate(w * h) { i => image(i / w, i % w) / 255.0 }
-      val output = DenseVector.zeros[Double](10)
+  def imageWidth = imageReader.width
+  def imageHeight = imageReader.height
 
-      output(label) = 1.0
+  def imagesAsMatrices = imageReader.imagesAsMatrices
+  def imagesAsVectors = imageReader.imagesAsVectors
 
-      input -> output
-  }
+  def labelsAsInts = labelReader.labelsAsInts
+  def labelsAsVectors = labelReader.labelsAsVectors
+
+  def examples = imagesAsVectors zip labelsAsVectors
 
 }

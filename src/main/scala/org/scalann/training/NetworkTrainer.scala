@@ -9,12 +9,12 @@ class NetworkTrainer(val learningRate: Double, val momentumMultiplier: Double, v
   private val stageTrainer = new SimpleTrainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
   private val rbmTrainer = new SimpleTrainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
 
-  def train(nn: FeedForwardNetwork)(examples: List[(DenseVector[Double], DenseVector[Double])]) {
+  def train(nn: FeedForwardNetwork)(examples: Seq[(DenseVector[Double], DenseVector[Double])])(callback: (Int) => Unit = { _ => }) {
     pretrainNetwork(nn)(examples)
-    stageTrainer.train(nn)(examples)()
+    stageTrainer.train(nn)(examples)(callback)
   }
 
-  def pretrainNetwork(nn: FeedForwardNetwork)(examples: List[(DenseVector[Double], DenseVector[Double])]) {
+  def pretrainNetwork(nn: FeedForwardNetwork)(examples: Seq[(DenseVector[Double], DenseVector[Double])]) {
     var currentPretrainInputs = examples.map(_._1)
 
     for (l <- 0 until nn.layers.size - 1) {
