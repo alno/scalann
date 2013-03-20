@@ -1,7 +1,8 @@
-package org.scalann
+package org.scalann.examples
 
 import breeze.linalg._
 import breeze.classify.Classifier
+import org.scalann.Stage
 
 class BreezeClassifier(stage: Stage) extends Classifier[Int, DenseVector[Double]] {
 

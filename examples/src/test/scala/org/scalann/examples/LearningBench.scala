@@ -1,7 +1,11 @@
-package org.scalann
+package org.scalann.examples
 
 import breeze.linalg._
 import com.google.caliper.SimpleBenchmark
+import org.scalann.LogisticLayer
+import org.scalann.Rbm
+import org.scalann.SequentalNetwork
+import org.scalann.SoftmaxLayer
 import org.scalann.examples.Mnist
 
 class LearningBench extends SimpleBenchmark {
