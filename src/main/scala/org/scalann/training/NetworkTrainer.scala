@@ -1,6 +1,7 @@
 package org.scalann.training
 
 import org.scalann._
+import org.scalann.utils._
 import org.scalann.decay.Decay
 import breeze.linalg._
 
@@ -9,12 +10,12 @@ class NetworkTrainer(val learningRate: Double, val momentumMultiplier: Double, v
   private val stageTrainer = new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
   private val rbmTrainer = new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
 
-  def train(nn: SequentalNetwork)(examples: Seq[(DenseVector[Double], DenseVector[Double])])(callback: (Int) => Unit = { _ => }) {
+  def train(nn: SequentalNetwork)(examples: IndexedSeq[(DenseVector[Double], DenseVector[Double])])(callback: (Int) => Unit = { _ => }) {
     pretrainNetwork(nn)(examples)
     stageTrainer.train(nn)(examples)(callback)
   }
 
-  def pretrainNetwork(nn: SequentalNetwork)(examples: Seq[(DenseVector[Double], DenseVector[Double])]) {
+  def pretrainNetwork(nn: SequentalNetwork)(examples: IndexedSeq[(DenseVector[Double], DenseVector[Double])]) {
     var currentPretrainInputs = examples.map(_._1)
 
     for (l <- 0 until nn.layers.size - 1) {
@@ -24,7 +25,7 @@ class NetworkTrainer(val learningRate: Double, val momentumMultiplier: Double, v
       val rbm = new Rbm(layer.inputSize, layer.outputSize)
 
       // Train rbm
-      rbmTrainer.train(rbm)(currentPretrainInputs)()
+      rbmTrainer.train(rbm)(currentPretrainInputs.sample(50))()
 
       // Assign pretrained layer weights and biases
       layer.weights := rbm.weights
@@ -38,7 +39,7 @@ class NetworkTrainer(val learningRate: Double, val momentumMultiplier: Double, v
     val lastLayer = nn.layers.last
 
     println("Pretraining output layer")
-    stageTrainer.train(lastLayer)(lastPretrainExamples)()
+    stageTrainer.train(lastLayer)(lastPretrainExamples.sample(500))()
     println("Pretraining complete")
   }
 
