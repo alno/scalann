@@ -1,9 +1,9 @@
 package org.scalann.examples
 
 import breeze.linalg._
-import breeze.classify._
 import breeze.optimize.FirstOrderMinimizer.OptParams
-import breeze.data.Example
+import nak.classify._
+import nak.data.Example
 
 object BreezeComparer extends App {
 

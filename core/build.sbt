@@ -3,8 +3,8 @@ common.settings
 name := "scalann-core"
 
 libraryDependencies ++= Seq(
-  "org.scalanlp" %% "breeze-math" % common.breezeVersion,
-  "org.scalanlp" %% "breeze-viz" % common.breezeVersion
+  "org.scalanlp" %% "breeze" % common.breezeVersion,
+  "org.scalanlp" %% "breeze-viz" % common.breezeVizVersion
 )
 
 libraryDependencies ++= Seq(

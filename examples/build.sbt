@@ -3,9 +3,9 @@ common.settings
 name := "scalann-examples"
 
 libraryDependencies ++= Seq(
-  "org.scalanlp" %% "breeze-math" % common.breezeVersion,
-  "org.scalanlp" %% "breeze-viz" % common.breezeVersion,
-  "org.scalanlp" %% "breeze-learn" % common.breezeVersion
+  "org.scalanlp" %% "breeze" % common.breezeVersion,
+  "org.scalanlp" %% "breeze-viz" % common.breezeVizVersion,
+  "org.scalanlp" %% "nak" % common.nakVersion
 )
 
 libraryDependencies ++= Seq(

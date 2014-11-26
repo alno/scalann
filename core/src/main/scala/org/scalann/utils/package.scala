@@ -1,24 +1,26 @@
 package org.scalann
 
 import breeze.linalg.DenseVector
-import breeze.generic.UFunc
+import breeze.generic._
 import scala.math._
 import java.io.{ DataInput, DataOutput }
 
 package object utils {
 
-  def sample = UFunc { (x: Double) =>
-    if (x > fastRandomDouble) 1.0 else 0.0
+  object sample extends UFunc with MappingUFunc {
+    implicit object doubleImpl extends Impl[Double, Double] { def apply(x: Double) = if (x > fastRandomDouble) 1.0 else 0.0 }
   }
 
   /**
    * log(p/(1-p)) = log(p) - log(1-p)
    */
-  def logp = UFunc { (p: Double) =>
-    log(max(p, 1e-10)) - log(max(1 - p, 1e-10))
+  object logp extends UFunc with MappingUFunc {
+    implicit object doubleImpl extends Impl[Double, Double] { def apply(p: Double) = log(max(p, 1e-10)) - log(max(1 - p, 1e-10)) }
   }
 
-  def zero = UFunc { (x: Any) => 0.0 }
+  object zero extends UFunc with MappingUFunc {
+    implicit object doubleImpl extends Impl[Double, Double] { def apply(x: Double) = 0.0 }
+  }
 
   private var randomState: Long = System.nanoTime
 

@@ -32,7 +32,7 @@ object ImageUtils {
 
   def saveLayerWeight(weights: DenseMatrix[Double], path: String, inputWidth: Int, inputHeight: Int, layerRows: Int, layerCols: Int) =
     saveMatrices(path, inputWidth, inputHeight, layerRows, layerCols) { (x, y) =>
-      val row = weights(x * layerCols + y, ::).copy
+      val row = weights(x * layerCols + y, ::).t
       new DenseMatrix(inputHeight, inputWidth, row.data, row.offset)
     }
 
