@@ -9,6 +9,5 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % common.scalaTestVersion % "test",
-  "com.google.caliper" % "caliper" % "0.5-rc1" % "test"
+  "org.scalatest" %% "scalatest" % common.scalaTestVersion % "test"
 )
