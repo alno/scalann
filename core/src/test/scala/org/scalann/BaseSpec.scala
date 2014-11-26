@@ -1,14 +1,13 @@
 package org.scalann
 
 import org.scalann.utils._
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest._
 import breeze.linalg._
 import scala.math._
 
 import java.io.{ DataOutputStream, DataInputStream, ByteArrayOutputStream, ByteArrayInputStream }
 
-abstract class BaseSpec extends FunSpec with ShouldMatchers {
+abstract class BaseSpec extends FunSpec with Matchers {
 
   def vec(elems: Double*) = DenseVector(elems: _*)
   def vecRand(size: Int) = DenseVector.fill[Double](size)(math.random)
@@ -36,7 +35,7 @@ abstract class BaseSpec extends FunSpec with ShouldMatchers {
         layer.assignParams(oldParams)
       }
 
-      gradient(i) should be((temp / gradientStep) plusOrMinus gradientThreshold)
+      gradient(i) should be((temp / gradientStep) +- gradientThreshold)
     }
   }
 
@@ -55,7 +54,7 @@ abstract class BaseSpec extends FunSpec with ShouldMatchers {
         layer.assignParams(oldParams)
       }
 
-      gradient(i) should be((temp / gradientStep) plusOrMinus gradientThreshold)
+      gradient(i) should be((temp / gradientStep) +- gradientThreshold)
     }
   }
 
@@ -70,7 +69,7 @@ abstract class BaseSpec extends FunSpec with ShouldMatchers {
         temp += layer.exampleLoss((input + offset * distances(j)) -> target) * weights(j) * factor
       }
 
-      gradient(i) should be((temp / gradientStep) plusOrMinus gradientThreshold)
+      gradient(i) should be((temp / gradientStep) +- gradientThreshold)
     }
   }
 

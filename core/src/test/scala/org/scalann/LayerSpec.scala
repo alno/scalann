@@ -1,7 +1,5 @@
 package org.scalann
 
-import org.scalatest.FunSpec
-import org.scalatest.matchers.ShouldMatchers
 import breeze.plot._
 import breeze.linalg._
 import scala.math._
