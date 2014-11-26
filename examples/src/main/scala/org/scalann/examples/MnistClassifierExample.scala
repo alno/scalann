@@ -6,6 +6,7 @@ import org.scalann.decay._
 import org.scalann.training._
 import org.scalann.visualization._
 import java.io.{ DataOutputStream, FileOutputStream }
+import breeze.linalg._
 
 object MnistClassifierExample extends App {
 
@@ -43,7 +44,7 @@ object MnistClassifierExample extends App {
   println("Test loss: " + nn.examplesLoss(testExamples))
 
   val testErrorRate = testExamples.filter { ex =>
-    nn(ex._1).argmax != ex._2.argmax
+    argmax(nn(ex._1)) != argmax(ex._2)
   }.size * 1.0 / testExamples.size
 
   println("Finished, test error rate: " + testErrorRate)

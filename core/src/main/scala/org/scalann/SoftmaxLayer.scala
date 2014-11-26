@@ -10,14 +10,14 @@ class SoftmaxLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputS
   protected def outputTransform(v: DenseVector[Double]) = {
     val data = v.data
     val stride = v.stride
-    val max = v.max
+    val maxVal = max(v)
 
     var pos = v.offset
     var ind = 0
     var sum = 0.0
 
     while (ind < v.size) {
-      val cur = exp(data(pos) - max)
+      val cur = exp(data(pos) - maxVal)
 
       data(pos) = cur
       sum += cur
