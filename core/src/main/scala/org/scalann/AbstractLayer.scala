@@ -3,10 +3,10 @@ package org.scalann
 import breeze.linalg._
 import breeze.numerics._
 import scala.math.exp
-
 import org.netlib.blas.Dgemv
 import org.netlib.blas.Daxpy
 import org.netlib.blas.Dger
+import org.scalann.activation.ActivationTransform
 
 abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends Stage {
 
@@ -23,7 +23,7 @@ abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends St
   def forward(input: DenseVector[Double]) = {
     val result = weights * input
     result += biases
-    outputTransform(result)
+    activation.transformOutput(result)
 
     result -> new Memo {
 
@@ -32,7 +32,7 @@ abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends St
 
         if (outputDeriv) { // If output derivation should be transformed
           dEh = dEh.copy // Copy it
-          outputDerivationTransform(dEh, result) // Transform (destructively)
+          activation.transformOutputDerivation(dEh, result) // Transform (destructively)
         }
 
         if (inputGradAcc != null) {
@@ -71,8 +71,6 @@ abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends St
   def assignParams(newParams: DenseVector[Double]) =
     params := newParams
 
-  protected def outputTransform(v: DenseVector[Double])
-
-  protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double])
+  def activation: ActivationTransform
 
 }

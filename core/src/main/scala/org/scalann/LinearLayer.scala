@@ -2,13 +2,11 @@ package org.scalann
 
 import breeze.linalg._
 import org.scalann.loss.SquaredLoss
+import org.scalann.activation.Linear
 
 class LinearLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputSize, outputSize) {
 
-  protected def outputTransform(v: DenseVector[Double]) {}
-
-  protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double]) {}
-
+  override def activation = Linear
   override def loss = SquaredLoss
 
 }
