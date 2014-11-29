@@ -2,10 +2,9 @@ package org.scalann
 
 import breeze.linalg._
 import breeze.numerics._
+import org.scalann.loss.LogisticLoss
 
 class LogisticLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputSize, outputSize) {
-
-  private[this] val tiny = 1e-300
 
   protected def outputTransform(v: DenseVector[Double]) =
     sigmoid.inPlace(v)
@@ -29,9 +28,6 @@ class LogisticLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(input
     }
   }
 
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double =
-    -(actual.activeValuesIterator zip target.activeValuesIterator).map {
-      case (a, b) => math.log(a + tiny) * b + math.log(1 - a + tiny) * (1 - b)
-    }.sum
+  override def loss = LogisticLoss
 
 }

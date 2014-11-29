@@ -1,6 +1,7 @@
 package org.scalann
 
 import breeze.linalg._
+import org.scalann.loss.Loss
 
 abstract class Stage extends Optimizable[(DenseVector[Double], DenseVector[Double])] with (DenseVector[Double] => DenseVector[Double]) {
 
@@ -41,11 +42,11 @@ abstract class Stage extends Optimizable[(DenseVector[Double], DenseVector[Doubl
   }
 
   def exampleLoss(ex: (DenseVector[Double], DenseVector[Double])): Double =
-    cost(apply(ex._1), ex._2)
-
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double
+    loss(apply(ex._1), ex._2)
 
   def examplesLoss(examples: Traversable[(DenseVector[Double], DenseVector[Double])]): Double =
     examples.view.map(exampleLoss).sum / examples.size
+
+  def loss: Loss
 
 }

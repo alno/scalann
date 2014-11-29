@@ -2,10 +2,9 @@ package org.scalann
 
 import breeze.linalg._
 import scala.math.exp
+import org.scalann.loss.SoftmaxLoss
 
 class SoftmaxLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputSize, outputSize) {
-
-  private[this] val tiny = 1e-300
 
   protected def outputTransform(v: DenseVector[Double]) = {
     val data = v.data
@@ -30,8 +29,6 @@ class SoftmaxLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputS
 
   protected def outputDerivationTransform(dv: DenseVector[Double], v: DenseVector[Double]) {}
 
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]): Double =
-    -(actual.activeValuesIterator zip target.activeValuesIterator).map {
-      case (a, b) => math.log(a + tiny) * b
-    }.sum
+  override def loss = SoftmaxLoss
+
 }

@@ -71,8 +71,7 @@ class SequentalNetwork(val layers: List[Stage]) extends Stage {
       pos + layer.paramSize
     }
 
-  def cost(actual: DenseVector[Double], target: DenseVector[Double]) =
-    layers.last.cost(actual, target)
+  override def loss = layers.last.loss
 
   @tailrec
   private def validateLayers(head: Stage, tail: Traversable[Stage]): Unit =
