@@ -1,11 +1,30 @@
 package org.scalann.examples
 
-import java.io.{ FileInputStream, DataInputStream }
+import java.io.{ File, FileInputStream, FileOutputStream, DataInputStream }
+import java.net.URL
+import java.nio.file.{ Files, Paths }
+import java.nio.channels.Channels
+import java.util.zip.GZIPInputStream
 import breeze.linalg._
 
-class MnistLabelReader(fileName: String) {
+class MnistFileReader(location: String, fileName: String) {
 
-  private[this] val stream = new DataInputStream(new FileInputStream(fileName))
+  private[this] val path = Paths.get(location, fileName)
+
+  if (!Files.exists(path))
+    download
+
+  protected[this] val stream = new DataInputStream(new GZIPInputStream(new FileInputStream(path.toString)))
+
+  private def download: Unit = {
+    val rbc = Channels.newChannel(new URL(s"http://yann.lecun.com/exdb/mnist/$fileName").openStream())
+    val fos = new FileOutputStream(s"$location/$fileName")
+    fos.getChannel.transferFrom(rbc, 0, Long.MaxValue)
+  }
+
+}
+
+class MnistLabelReader(location: String, fileName: String) extends MnistFileReader(location, fileName) {
 
   assert(stream.readInt() == 2049, "Wrong MNIST label stream magic")
 
@@ -24,9 +43,7 @@ class MnistLabelReader(fileName: String) {
 
 }
 
-class MnistImageReader(fileName: String) {
-
-  private[this] val stream = new DataInputStream(new FileInputStream(fileName))
+class MnistImageReader(location: String, fileName: String) extends MnistFileReader(location, fileName) {
 
   assert(stream.readInt() == 2051, "Wrong MNIST image stream magic")
 
@@ -56,10 +73,13 @@ class MnistImageReader(fileName: String) {
 
 }
 
-class Mnist(location: String) {
+/**
+ * http://yann.lecun.com/exdb/mnist/
+ */
+class MnistDataset(location: String, dataset: String) {
 
-  lazy val imageReader = new MnistImageReader(location + "/train-images-idx3-ubyte")
-  lazy val labelReader = new MnistLabelReader(location + "/train-labels-idx1-ubyte")
+  lazy val imageReader = new MnistImageReader(location, s"$dataset-images-idx3-ubyte.gz")
+  lazy val labelReader = new MnistLabelReader(location, s"$dataset-labels-idx1-ubyte.gz")
 
   def imageWidth = imageReader.width
   def imageHeight = imageReader.height
@@ -71,5 +91,18 @@ class Mnist(location: String) {
   def labelsAsVectors = labelReader.labelsAsVectors
 
   def examples = imagesAsVectors zip labelsAsVectors
+
+}
+
+object Mnist {
+
+  val location = Option(System.getenv("MNIST_PATH")).getOrElse(List(System.getenv("HOME"), ".cache", "mnist").mkString(File.separator))
+  val locationFile = new File(location)
+
+  if (!locationFile.exists)
+    locationFile.mkdirs
+
+  val trainDataset = new MnistDataset(location, "train")
+  val testDataset = new MnistDataset(location, "t10k")
 
 }

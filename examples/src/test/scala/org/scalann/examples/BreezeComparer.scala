@@ -7,7 +7,7 @@ import nak.data.Example
 
 object BreezeComparer extends App {
 
-  val mnist = new Mnist(System.getenv("MNIST_PATH"))
+  val mnist = Mnist.trainDataset
 
   val breezeExamples = (mnist.imagesAsMatrices zip mnist.labelsAsInts).map {
     case (image, label) =>

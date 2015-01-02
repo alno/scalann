@@ -68,7 +68,7 @@ class LearningBench {
 }
 
 object LearningBench {
-  val mnist = new Mnist(System.getenv("MNIST_PATH"))
+  val mnist = Mnist.trainDataset
   val examples = mnist.examples
 
   val example = examples.head

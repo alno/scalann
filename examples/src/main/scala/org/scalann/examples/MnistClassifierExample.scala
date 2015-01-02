@@ -10,7 +10,7 @@ import breeze.linalg._
 
 object MnistClassifierExample extends App {
 
-  val mnist = new Mnist(System.getenv("MNIST_PATH"))
+  val mnist = Mnist.trainDataset
 
   val trainExamples = mnist.examples.take(7000).toVector
   val testExamples = mnist.examples.drop(trainExamples.size).take(10000).toVector

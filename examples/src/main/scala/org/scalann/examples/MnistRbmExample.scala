@@ -9,7 +9,7 @@ import java.io.{ DataOutputStream, FileOutputStream }
 
 object MnistRbmExample extends App {
 
-  val mnist = new Mnist(System.getenv("MNIST_PATH"))
+  val mnist = Mnist.trainDataset
 
   val trainImages = mnist.imagesAsVectors.take(1000).toVector
 
