@@ -35,10 +35,10 @@ package object utils {
 
   implicit class IndexedSeqExt[T](val seq: IndexedSeq[T]) extends AnyVal {
 
-    def sample(count: Int): Seq[T] = {
+    def sample(count: Int): IndexedSeq[T] = {
       val rand = new java.util.Random
 
-      List.fill(count) {
+      Vector.fill(count) {
         seq(rand.nextInt(seq.size))
       }
     }

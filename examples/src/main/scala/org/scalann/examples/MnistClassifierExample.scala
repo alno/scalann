@@ -15,12 +15,17 @@ object MnistClassifierExample extends App {
   val trainExamples = mnist.examples.take(7000).toVector
   val testExamples = mnist.examples.drop(trainExamples.size).take(10000).toVector
 
-  val trainer = new NetworkTrainer(
+  val trainer = new Trainer(
     learningRate = 0.5,
     momentumMultiplier = 0.8,
     decay = L2Decay,
     decayCoeff = 0.005,
-    maxIter = 2000)
+    maxIter = 5000) with Pretraining {
+
+    override def createRbmTrainer(layer: LogisticLayer, rbm: Rbm): Trainer =
+      new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, 2000)
+
+  }
 
   val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 25), new SoftmaxLayer(25, 10)))
 

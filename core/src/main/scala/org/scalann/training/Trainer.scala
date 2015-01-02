@@ -6,7 +6,7 @@ import breeze.linalg._
 
 class Trainer(val learningRate: Double, val momentumMultiplier: Double, val decay: Decay, val decayCoeff: Double, val maxIter: Int) {
 
-  def train[T](target: Optimizable[T])(examples: => Traversable[T])(callback: (Int) => Unit = { _ => }) {
+  def train[T](target: Optimizable[T])(examples: => IndexedSeq[target.Example])(callback: (Int) => Unit = { _ => }) {
     val momentum = DenseVector.zeros[Double](target.paramSize)
 
     for (iter <- 1 to maxIter) {
