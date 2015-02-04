@@ -5,9 +5,10 @@ import breeze.linalg._
 /**
  * L2 weight decay
  */
-object L2Decay extends Decay {
+case class L2Decay(coeff: Double) extends Decay {
 
-  def gradientAdd(params: DenseVector[Double], mask: DenseVector[Double])(gradient: DenseVector[Double], coeff: Double) {
+  def gradientAdd(params: DenseVector[Double], mask: DenseVector[Double])(gradient: DenseVector[Double], factor: Double) {
+    val mult = factor * coeff
     val pd = params.data
     val md = mask.data
     val gd = gradient.data
@@ -17,7 +18,7 @@ object L2Decay extends Decay {
 
     var i = 0
     while (i < params.length) {
-      gd(goff) -= coeff * pd(poff) * md(moff)
+      gd(goff) -= mult * pd(poff) * md(moff)
       poff += params.stride
       moff += mask.stride
       goff += gradient.stride

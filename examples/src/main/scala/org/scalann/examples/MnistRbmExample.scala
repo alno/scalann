@@ -16,8 +16,7 @@ object MnistRbmExample extends App {
   val trainer = new Trainer(
     learningRate = 0.2,
     momentumMultiplier = 0.5,
-    decay = L2Decay,
-    decayCoeff = 0.001,
+    decay = L2Decay(0.001),
     maxIter = 10000)
 
   val rbm = new Rbm(mnist.imageWidth * mnist.imageHeight, 25)

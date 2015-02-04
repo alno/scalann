@@ -7,6 +7,6 @@ import breeze.linalg._
  */
 object NoDecay extends Decay {
 
-  def gradientAdd(params: DenseVector[Double], mask: DenseVector[Double])(gradient: DenseVector[Double], coeff: Double) {}
+  def gradientAdd(params: DenseVector[Double], mask: DenseVector[Double])(gradient: DenseVector[Double], factor: Double) {}
 
 }

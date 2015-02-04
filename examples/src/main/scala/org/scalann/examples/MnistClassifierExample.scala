@@ -18,12 +18,11 @@ object MnistClassifierExample extends App {
   val trainer = new Trainer(
     learningRate = 0.5,
     momentumMultiplier = 0.8,
-    decay = L2Decay,
-    decayCoeff = 0.005,
+    decay = L2Decay(0.005),
     maxIter = 5000) with Pretraining {
 
     override def createRbmTrainer(layer: LogisticLayer, rbm: Rbm): Trainer =
-      new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, 2000)
+      new Trainer(learningRate, momentumMultiplier, decay, 2000)
 
   }
 

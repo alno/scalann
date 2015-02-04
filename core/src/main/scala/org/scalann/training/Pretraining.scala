@@ -8,10 +8,10 @@ import breeze.linalg._
 trait Pretraining extends Trainer {
 
   def createRbmTrainer(layer: LogisticLayer, rbm: Rbm): Trainer =
-    new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
+    new Trainer(learningRate, momentumMultiplier, decay, maxIter)
 
   def createOutPreTrainer(layer: Stage): Trainer =
-    new Trainer(learningRate, momentumMultiplier, decay, decayCoeff, maxIter)
+    new Trainer(learningRate, momentumMultiplier, decay, maxIter)
 
   override abstract def train[T](target: Optimizable[T])(examples: => IndexedSeq[target.Example])(callback: (Int) => Unit = { _ => }) {
     target match {
@@ -33,7 +33,7 @@ trait Pretraining extends Trainer {
       val rbm = new Rbm(layer.inputSize, layer.outputSize)
 
       // Train rbm
-      createRbmTrainer(layer, rbm).train(rbm)(currentPretrainInputs.sample(50))()
+      createRbmTrainer(layer, rbm).train(rbm)(currentPretrainInputs.sample(50))() // TODO Notify
 
       // Assign pretrained layer weights and biases
       layer.weights := rbm.weights
@@ -47,8 +47,10 @@ trait Pretraining extends Trainer {
     val lastLayer = nn.layers.last
 
     println("Pretraining output layer")
-    createOutPreTrainer(lastLayer).train(lastLayer)(lastPretrainExamples.sample(500))()
+    createOutPreTrainer(lastLayer).train(lastLayer)(lastPretrainExamples.sample(500))() // TODO Notify
     println("Pretraining complete")
+
+    // TODO Pretrain up in a loop
   }
 
 }
