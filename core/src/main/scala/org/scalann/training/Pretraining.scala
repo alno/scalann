@@ -4,6 +4,8 @@ import org.scalann._
 import org.scalann.utils._
 import org.scalann.decay.Decay
 import breeze.linalg._
+import org.scalann.stages.SeqStage
+import org.scalann.stages.LogisticLayer
 
 trait Pretraining extends Trainer {
 
@@ -15,7 +17,7 @@ trait Pretraining extends Trainer {
 
   override abstract def train[T](target: Optimizable[T])(examples: => IndexedSeq[target.Example])(callback: (Int) => Unit = { _ => }) {
     target match {
-      case nn: SequentalNetwork =>
+      case nn: SeqStage[_, _] =>
         pretrain(nn)(examples)
       case _ =>
     }
@@ -23,7 +25,7 @@ trait Pretraining extends Trainer {
     super.train(target)(examples)(callback)
   }
 
-  def pretrain(nn: SequentalNetwork)(examples: IndexedSeq[(DenseVector[Double], DenseVector[Double])]) {
+  def pretrain(nn: SeqStage[_, _])(examples: IndexedSeq[(DenseVector[Double], DenseVector[Double])]) {
     val inputs = examples.map(_._1)
     val layer = nn.head.asInstanceOf[LogisticLayer]
 
@@ -39,9 +41,9 @@ trait Pretraining extends Trainer {
     val nextExamples = inputs.map(layer) zip examples.map(_._2)
 
     nn.tail match {
-      case nnn: SequentalNetwork =>
+      case nnn: SeqStage[_, _] =>
         pretrain(nnn)(nextExamples)
-      case outputLayer =>
+      case outputLayer: Stage =>
         println("Pretraining output layer")
         createOutPreTrainer(outputLayer).train(outputLayer)(nextExamples)() // TODO Notify
         println("Pretraining complete")

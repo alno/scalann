@@ -1,6 +1,6 @@
 package org.scalann.builder
 
-import org.scalann.LogisticLayer
+import org.scalann.stages.LogisticLayer
 
 case class Logistic(size: Int) extends AbstractLayerBlueprint[LogisticLayer](size) {
 

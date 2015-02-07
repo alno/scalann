@@ -1,9 +1,9 @@
-package org.scalann
+package org.scalann.stages
 
 import breeze.linalg._
-import scala.annotation.tailrec
+import org.scalann.Stage
 
-case class SequentalNetwork(head: Stage, tail: Stage) extends Stage with Serializable {
+case class SeqStage[+H <: Stage, +T <: Stage](head: H, tail: T) extends Stage with Serializable {
 
   require(head.outputSize == tail.inputSize)
 

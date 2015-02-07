@@ -6,6 +6,7 @@ import org.scalann.decay._
 import org.scalann.training._
 import org.scalann.visualization._
 import org.scalann.builder._
+import org.scalann.stages._
 import java.io.{ DataOutputStream, FileOutputStream }
 import breeze.linalg._
 

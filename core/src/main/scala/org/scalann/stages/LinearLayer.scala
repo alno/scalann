@@ -1,4 +1,4 @@
-package org.scalann
+package org.scalann.stages
 
 import breeze.linalg._
 import org.scalann.loss.SquaredLoss
@@ -9,6 +9,6 @@ class LinearLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputSi
   override def activation = Linear
   override def loss = SquaredLoss
 
-  override def toString = s"linear($outputSize)"
+  override def toString = s"Linear($outputSize)"
 
 }

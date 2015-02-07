@@ -1,4 +1,4 @@
-package org.scalann
+package org.scalann.stages
 
 import breeze.linalg._
 import breeze.numerics._
@@ -10,6 +10,6 @@ class LogisticLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(input
   override def activation = Logistic
   override def loss = LogisticLoss
 
-  override def toString = s"logistic($outputSize)"
+  override def toString = s"Logistic($outputSize)"
 
 }

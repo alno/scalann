@@ -1,6 +1,6 @@
 package org.scalann.builder
 
-import org.scalann.LinearLayer
+import org.scalann.stages.LinearLayer
 
 case class Linear(size: Int) extends AbstractLayerBlueprint[LinearLayer](size) {
 

@@ -1,12 +1,12 @@
-package org.scalann
+package org.scalann.stages
 
 import breeze.linalg._
 import breeze.numerics._
-import scala.math.exp
 import org.netlib.blas.Dgemv
 import org.netlib.blas.Daxpy
 import org.netlib.blas.Dger
 import org.scalann.activation.ActivationTransform
+import org.scalann.Stage
 
 abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends Stage with Serializable {
 

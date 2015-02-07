@@ -1,8 +1,8 @@
 package org.scalann.builder
 
 import org.scalann.Stage
-import org.scalann.SequentalNetwork
-import org.scalann.AbstractLayer
+import org.scalann.stages.SeqStage
+import org.scalann.stages.AbstractLayer
 
 trait Blueprint[T <: Stage] {
 
@@ -23,12 +23,12 @@ abstract class AbstractLayerBlueprint[T <: AbstractLayer](outputSize: Int) exten
 
 object Blueprint {
 
-  case class :>:[H <: Stage, T <: Stage](head: Blueprint[H], tail: Blueprint[T]) extends Blueprint[SequentalNetwork] {
+  case class :>:[H <: Stage, T <: Stage](head: Blueprint[H], tail: Blueprint[T]) extends Blueprint[SeqStage[H, T]] {
 
     override def buildForInputs(inputSize: Int) = {
       val headStage = head.buildForInputs(inputSize)
       val tailStage = tail.buildForInputs(headStage.outputSize)
-      new SequentalNetwork(headStage, tailStage)
+      new SeqStage(headStage, tailStage)
     }
 
     override def calculateParamSize(inputSize: Int): Int = {

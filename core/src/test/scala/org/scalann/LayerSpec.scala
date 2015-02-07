@@ -3,6 +3,7 @@ package org.scalann
 import breeze.plot._
 import breeze.linalg._
 import scala.math._
+import org.scalann.stages._
 
 class LayerSpec extends BaseSpec {
 
