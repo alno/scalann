@@ -8,7 +8,7 @@ import org.netlib.blas.Daxpy
 import org.netlib.blas.Dger
 import org.scalann.activation.ActivationTransform
 
-abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends Stage {
+abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends Stage with Serializable {
 
   val paramSize = outputSize * (inputSize + 1)
 
