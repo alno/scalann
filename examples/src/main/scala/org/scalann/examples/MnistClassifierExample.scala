@@ -5,6 +5,7 @@ import org.scalann.utils._
 import org.scalann.decay._
 import org.scalann.training._
 import org.scalann.visualization._
+import org.scalann.builder._
 import java.io.{ DataOutputStream, FileOutputStream }
 import breeze.linalg._
 
@@ -26,7 +27,7 @@ object MnistClassifierExample extends App {
 
   }
 
-  val nn = new SequentalNetwork(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 25), new SoftmaxLayer(25, 10))
+  val nn = Input(mnist.imageWidth * mnist.imageHeight) :>: Logistic(25) :>: Softmax(10)
 
   trainer.train(nn) { trainExamples } { iter =>
     if (iter % 10 == 0) {

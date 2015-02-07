@@ -1,18 +1,16 @@
 package org.scalann.examples
 
 import breeze.linalg._
-import org.scalann.LogisticLayer
 import org.scalann.Rbm
-import org.scalann.SequentalNetwork
-import org.scalann.SoftmaxLayer
+import org.scalann.builder._
 import org.openjdk.jmh.annotations._
 
 @State(Scope.Thread)
 class LearningBench {
   import LearningBench._
 
-  val nn = new SequentalNetwork(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 200), new SoftmaxLayer(200, 10))
-  val l = new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 10)
+  val nn = Input(mnist.imageWidth * mnist.imageHeight) :>: Logistic(200) :>: Softmax(10)
+  val l = Input(mnist.imageWidth * mnist.imageHeight) :>: Logistic(10)
   val rbm = new Rbm(mnist.imageWidth * mnist.imageHeight, 10)
 
   @Benchmark

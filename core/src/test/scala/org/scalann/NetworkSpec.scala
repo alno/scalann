@@ -3,15 +3,16 @@ package org.scalann
 import breeze.plot._
 import breeze.linalg._
 import scala.math._
+import org.scalann.builder._
 
 class NetworkSpec extends BaseSpec {
 
   def zv(size: Int) = DenseVector.fill[Double](size)(math.random)
 
   val testLayerConfigs = Map(
-    new SequentalNetwork(new LogisticLayer(4, 3), new LogisticLayer(3, 2)) -> logisticTarget _,
-    new SequentalNetwork(new LogisticLayer(4, 3), new SoftmaxLayer(3, 2)) -> softmaxTarget _,
-    new SequentalNetwork(new LogisticLayer(4, 3), new LinearLayer(3, 2)) -> linearTarget _)
+    (Input(4) :>: Logistic(3) :>: Logistic(2)) -> logisticTarget _,
+    (Input(4) :>: Logistic(3) :>: Softmax(2)) -> softmaxTarget _,
+    (Input(4) :>: Logistic(3) :>: Linear(2)) -> linearTarget _)
 
   testLayerConfigs.foreach {
     case (net, targetFun) =>
