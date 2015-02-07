@@ -10,4 +10,6 @@ class SoftmaxLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputS
   override def activation = Softmax
   override def loss = SoftmaxLoss
 
+  override def toString = s"softmax($outputSize)"
+
 }

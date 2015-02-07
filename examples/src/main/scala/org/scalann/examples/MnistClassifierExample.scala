@@ -26,7 +26,7 @@ object MnistClassifierExample extends App {
 
   }
 
-  val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 25), new SoftmaxLayer(25, 10)))
+  val nn = new SequentalNetwork(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 25), new SoftmaxLayer(25, 10))
 
   trainer.train(nn) { trainExamples } { iter =>
     if (iter % 10 == 0) {
@@ -36,7 +36,7 @@ object MnistClassifierExample extends App {
     if (iter % 200 == 0) {
       println("Training loss: " + nn.examplesLoss(trainExamples))
 
-      ImageUtils.saveLayerWeight(nn.layers(0).asInstanceOf[LogisticLayer].weights, "mnist-nn.png", mnist.imageWidth, mnist.imageHeight, 5, 5)
+      ImageUtils.saveLayerWeight(nn.head.asInstanceOf[LogisticLayer].weights, "mnist-nn.png", mnist.imageWidth, mnist.imageHeight, 5, 5)
       println("First layer image saved")
 
       nn.save(new DataOutputStream(new FileOutputStream("mnist-nn.dat")))

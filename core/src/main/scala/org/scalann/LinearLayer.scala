@@ -9,4 +9,6 @@ class LinearLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(inputSi
   override def activation = Linear
   override def loss = SquaredLoss
 
+  override def toString = s"linear($outputSize)"
+
 }

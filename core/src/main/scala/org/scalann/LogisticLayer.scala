@@ -10,4 +10,6 @@ class LogisticLayer(inputSize: Int, outputSize: Int) extends AbstractLayer(input
   override def activation = Logistic
   override def loss = LogisticLoss
 
+  override def toString = s"logistic($outputSize)"
+
 }

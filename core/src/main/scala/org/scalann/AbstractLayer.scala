@@ -12,11 +12,13 @@ abstract class AbstractLayer(val inputSize: Int, val outputSize: Int) extends St
 
   val paramSize = outputSize * (inputSize + 1)
 
+  // TODO Point to upper
   val params = DenseVector.fill(paramSize) { math.random * 2 - 1 }
 
   val weights: DenseMatrix[Double] = new DenseMatrix(outputSize, inputSize, params.data)
   val biases: DenseVector[Double] = new DenseVector(params.data, outputSize * inputSize, 1, outputSize)
 
+  // TODO Replace with simple range checks
   val paramsDecay =
     DenseVector.vertcat(DenseVector.fill(outputSize * inputSize)(1.0), DenseVector.fill(outputSize)(0.0))
 

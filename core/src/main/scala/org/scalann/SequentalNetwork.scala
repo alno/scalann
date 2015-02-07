@@ -3,81 +3,58 @@ package org.scalann
 import breeze.linalg._
 import scala.annotation.tailrec
 
-class SequentalNetwork(val layers: List[Stage]) extends Stage with Serializable {
+case class SequentalNetwork(head: Stage, tail: Stage) extends Stage with Serializable {
 
-  validateLayers(layers.head, layers.tail)
+  require(head.outputSize == tail.inputSize)
 
-  val inputSize = layers.head.inputSize
-  val outputSize = layers.last.outputSize
-  val paramSize = layers.view.map(_.paramSize).sum
+  val inputSize = head.inputSize
+  val outputSize = tail.outputSize
+
+  val paramSize = head.paramSize + tail.paramSize
+
+  override def toString = s"$head :>: $tail"
 
   override def apply(input: DenseVector[Double]): DenseVector[Double] =
-    layers.foldLeft(input) { (in, layer) => layer(in) }
+    tail(head(input))
 
   def forward(input: DenseVector[Double]): (DenseVector[Double], Memo) = {
-    val memos = new Array[Stage#Memo](layers.size)
-    var current = input
+    val (headOutput, headMemo) = head.forward(input)
+    val (tailOutput, tailMemo) = tail.forward(headOutput)
 
-    for (i <- 0 until layers.size) {
-      val (output, memo) = layers(i).forward(current)
-
-      current = output
-      memos(i) = memo
-    }
-
-    current -> new Memo {
+    tailOutput -> new Memo {
 
       override def backwardAdd(derivation: DenseVector[Double], outputDeriv: Boolean)(inputGradAcc: DenseVector[Double], inputFactor: Double, paramGradAcc: DenseVector[Double], paramFactor: Double) {
-        var curOutputDeriv = outputDeriv
-        var curDerivation = derivation
-        var curEndPos = paramSize
-        var i = layers.size - 1
+        val nextDerivation = DenseVector.zeros[Double](tail.inputSize)
 
-        while (i > 0) {
-          val nextEndPos = curEndPos - layers(i).paramSize
-          val nextDerivation = DenseVector.zeros[Double](layers(i).inputSize)
-
-          memos(i).backwardAdd(curDerivation, curOutputDeriv)(nextDerivation, 1.0, paramGradAcc(nextEndPos until curEndPos), paramFactor)
-
-          curEndPos = nextEndPos
-          curDerivation = nextDerivation
-          curOutputDeriv = true
-          i -= 1
-        }
-
-        if (layers.size > 0) {
-          memos(0).backwardAdd(curDerivation, curOutputDeriv)(inputGradAcc, inputFactor, paramGradAcc(0 until curEndPos), paramFactor)
-        }
+        tailMemo.backwardAdd(derivation, outputDeriv)(nextDerivation, 1.0, paramGradAcc(head.paramSize until paramSize), paramFactor)
+        headMemo.backwardAdd(nextDerivation, true)(inputGradAcc, inputFactor, paramGradAcc(0 until head.paramSize), paramFactor)
       }
 
     }
   }
 
   def params =
-    DenseVector.vertcat(layers.view.map(_.params): _*)
+    DenseVector.vertcat(head.params, tail.params)
 
   def paramsDecay =
-    DenseVector.vertcat(layers.view.map(_.paramsDecay): _*)
+    DenseVector.vertcat(head.paramsDecay, tail.paramsDecay)
 
-  def updateParams(gradient: DenseVector[Double]) =
-    layers.foldLeft(0) { (pos, layer) =>
-      layer.updateParams(gradient(pos until (pos + layer.paramSize)))
-      pos + layer.paramSize
-    }
+  // TODO Remove
+  def updateParams(gradient: DenseVector[Double]) = {
+    require(gradient.size == paramSize)
 
-  def assignParams(newParams: DenseVector[Double]) =
-    layers.foldLeft(0) { (pos, layer) =>
-      layer.assignParams(newParams(pos until (pos + layer.paramSize)))
-      pos + layer.paramSize
-    }
+    head.updateParams(gradient(0 until head.paramSize))
+    tail.updateParams(gradient(head.paramSize until gradient.size))
+  }
 
-  override def loss = layers.last.loss
+  // TODO Remove
+  def assignParams(newParams: DenseVector[Double]) = {
+    require(newParams.size == paramSize)
 
-  @tailrec
-  private def validateLayers(head: Stage, tail: Traversable[Stage]): Unit =
-    if (tail.size > 0) {
-      require(head.outputSize == tail.head.inputSize)
-      validateLayers(tail.head, tail.tail)
-    }
+    head.assignParams(newParams(0 until head.paramSize))
+    tail.assignParams(newParams(head.paramSize until newParams.size))
+  }
+
+  override def loss = tail.loss
 
 }

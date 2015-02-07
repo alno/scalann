@@ -11,7 +11,7 @@ import org.openjdk.jmh.annotations._
 class LearningBench {
   import LearningBench._
 
-  val nn = new SequentalNetwork(List(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 200), new SoftmaxLayer(200, 10)))
+  val nn = new SequentalNetwork(new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 200), new SoftmaxLayer(200, 10))
   val l = new LogisticLayer(mnist.imageWidth * mnist.imageHeight, 10)
   val rbm = new Rbm(mnist.imageWidth * mnist.imageHeight, 10)
 

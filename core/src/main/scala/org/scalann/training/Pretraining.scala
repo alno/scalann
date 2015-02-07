@@ -23,34 +23,29 @@ trait Pretraining extends Trainer {
     super.train(target)(examples)(callback)
   }
 
-  def pretrain(nn: SequentalNetwork)(examples: => IndexedSeq[(DenseVector[Double], DenseVector[Double])]) {
-    var currentPretrainInputs = examples.map(_._1)
+  def pretrain(nn: SequentalNetwork)(examples: IndexedSeq[(DenseVector[Double], DenseVector[Double])]) {
+    val inputs = examples.map(_._1)
+    val layer = nn.head.asInstanceOf[LogisticLayer]
 
-    for (l <- 0 until nn.layers.size - 1) {
-      println("Pretraining layer " + l)
+    val rbm = new Rbm(layer.inputSize, layer.outputSize)
 
-      val layer = nn.layers(l).asInstanceOf[LogisticLayer]
-      val rbm = new Rbm(layer.inputSize, layer.outputSize)
+    // Train rbm
+    createRbmTrainer(layer, rbm).train(rbm)(inputs.sample(50))() // TODO Notify
 
-      // Train rbm
-      createRbmTrainer(layer, rbm).train(rbm)(currentPretrainInputs.sample(50))() // TODO Notify
+    // Assign pretrained layer weights and biases
+    layer.weights := rbm.weights
+    layer.biases := rbm.hiddenBiases
 
-      // Assign pretrained layer weights and biases
-      layer.weights := rbm.weights
-      layer.biases := rbm.hiddenBiases
+    val nextExamples = inputs.map(layer) zip examples.map(_._2)
 
-      println("Processing pretrain inputs...")
-      currentPretrainInputs = currentPretrainInputs.map(layer)
+    nn.tail match {
+      case nnn: SequentalNetwork =>
+        pretrain(nnn)(nextExamples)
+      case outputLayer =>
+        println("Pretraining output layer")
+        createOutPreTrainer(outputLayer).train(outputLayer)(nextExamples)() // TODO Notify
+        println("Pretraining complete")
     }
-
-    val lastPretrainExamples = currentPretrainInputs zip examples.view.map(_._2)
-    val lastLayer = nn.layers.last
-
-    println("Pretraining output layer")
-    createOutPreTrainer(lastLayer).train(lastLayer)(lastPretrainExamples.sample(500))() // TODO Notify
-    println("Pretraining complete")
-
-    // TODO Pretrain up in a loop
   }
 
 }
